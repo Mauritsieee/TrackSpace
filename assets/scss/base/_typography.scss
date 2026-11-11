@@ -1,0 +1,122 @@
+// =========
+// Font imports
+// =========
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100..900;1,100..900&display=swap');
+
+html {
+  font-size: $font-size-base;
+}
+
+// =========
+// Body setups
+// =========
+body {
+  font-family: $font-family-primary;
+  font-size: $font-size-base;
+  font-weight: $font-weight-base;
+  line-height: $line-height-base;
+  color: $text-color;
+  //sass-lint:disable-line no-vendor-prefixes
+  -webkit-font-smoothing: antialiased;
+}
+
+// =========
+// Typography
+// =========
+h1,
+.h1,
+h2,
+.h2,
+h3,
+.h3,
+h4,
+.h4,
+h5,
+.h5,
+h6,
+.h6 {
+  font-family: $font-family-headings;
+
+  color: $heading-color;
+  font-weight: $heading-font-weight;
+  margin-bottom: 1rem;
+
+  a {
+    color: inherit;
+  }
+}
+
+h1,
+.h1 {
+  font-size: 32px;
+  line-height: 1.2;
+
+  @include media-breakpoint-down(lg) {
+    font-size: 28px;
+  }
+
+  @include media-breakpoint-down(md) {
+    font-size: 24px;
+  }
+}
+
+h2,
+.h2 {
+  font-size: 26px;
+  line-height: 1.2;
+
+  @include media-breakpoint-down(lg) {
+    font-size: 24px;
+  }
+
+  @include media-breakpoint-down(md) {
+    font-size: 22px;
+  }
+}
+
+h3,
+.h3 {
+  font-size: 22px;
+  line-height: 1.2;
+
+  @include media-breakpoint-down(md) {
+    font-size: 20px;
+  }
+}
+
+h4,
+.h4 {
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+h5,
+.h5 {
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+h6,
+.h6 {
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.71;
+}
+
+a {
+  color: $primary-5;
+
+  &:hover {
+    color: $primary-6;
+  }
+}
+
+p {
+  color: $black;
+}
+
+strong,
+.strong {
+  font-weight: 700;
+}

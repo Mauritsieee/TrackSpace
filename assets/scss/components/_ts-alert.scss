@@ -1,0 +1,20 @@
+.ts-alert {
+    position:fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    @extend .card;
+
+    &-success {
+        border-color:$success;
+        background-color:rgba($success, 0.05);
+    }
+    &-warning {
+        border-color:$warning;
+        background-color:rgba($warning, 0.05);
+    }
+    &-danger {
+        border-color:$danger;
+        background-color:rgba($danger, 0.05);
+    }
+}

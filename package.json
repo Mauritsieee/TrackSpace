@@ -1,0 +1,16 @@
+{
+  "name": "TrackSpace",
+  "private": true,
+  "scripts": {
+    "build": "gulp",
+    "watch": "gulp watch"
+  },
+  "devDependencies": {
+    "browser-sync": "^3.0.3",
+    "gulp": "^5.0.1",
+    "gulp-cli": "^3.1.0",
+    "gulp-concat": "^2.6.1",
+    "gulp-sass": "^5.1.0",
+    "sass": "^1.93.2"
+  }
+}

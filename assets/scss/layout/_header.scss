@@ -1,0 +1,17 @@
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    height: $headerHeight;
+    padding: 0 24px;
+    background-color: $full-white;
+    border-bottom: 1px solid $primary-2;
+
+    button {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        cursor: pointer;
+    }
+}

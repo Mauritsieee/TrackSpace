@@ -1,0 +1,14 @@
+%card-styling {
+    width: fit-content;
+    padding: 24px;
+    
+}
+
+.card {
+    @extend %card-styling;
+    background-color: $full-white;
+    border: 1px solid $primary-2;
+    border-radius: 16px;
+    corner-shape: squircle;
+    box-shadow: 0 4px 24px rgba($primary-9, 0.05);
+}

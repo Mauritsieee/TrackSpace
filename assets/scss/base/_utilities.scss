@@ -1,0 +1,172 @@
+// =========
+// Text
+// =========
+
+@each $breakpoint in map-keys($grid-breakpoints) {
+  @include media-breakpoint-up($breakpoint) {
+    $infix: breakpoint-infix($breakpoint, $grid-breakpoints);
+
+    .u-text#{$infix}-left {
+      text-align: left;
+    }
+
+    .u-text#{$infix}-right {
+      text-align: right;
+    }
+
+    .u-text#{$infix}-center {
+      text-align: center;
+    }
+  }
+}
+
+.text-decoration {
+  &-underline {
+    text-decoration: underline;
+  }
+
+  &-none {
+    text-decoration: none;
+  }
+
+  &-dashed {
+    text-decoration: dashed;
+  }
+}
+
+.text {
+  &-left {
+    text-align: left;
+  }
+
+  &-center {
+    text-align: center;
+  }
+
+  &-right {
+    text-align: end;
+  }
+}
+
+// =========
+// Utilities
+// =========
+@each $breakpoint in map-keys($grid-breakpoints) {
+  @include media-breakpoint-up($breakpoint) {
+    $infix: breakpoint-infix($breakpoint, $grid-breakpoints);
+
+    .u-d#{$infix}-none {
+      display: none;
+    }
+
+    .u-d#{$infix}-inline {
+      display: inline;
+    }
+
+    .u-d#{$infix}-inline-block {
+      display: inline-block;
+    }
+
+    .u-d#{$infix}-block {
+      display: block;
+    }
+
+    .u-d#{$infix}-table {
+      display: table;
+    }
+
+    .u-d#{$infix}-table-row {
+      display: table-row;
+    }
+
+    .u-d#{$infix}-table-cell {
+      display: table-cell;
+    }
+
+    .u-d#{$infix}-flex {
+      display: flex;
+    }
+
+    .u-d#{$infix}-inline-flex {
+      display: inline-flex;
+    }
+  }
+}
+
+// Spacings
+@each $name, $spacing in $spacings {
+  @each $breakpoint in map-keys($grid-breakpoints) {
+    @include media-breakpoint-up($breakpoint) {
+      $infix: breakpoint-infix($breakpoint, $grid-breakpoints);
+
+      .spacer#{$infix}--#{$name} {
+        padding-bottom: $spacing;
+      }
+
+      .icon#{$infix}--#{$name} {
+        width: $spacing;
+        height: auto;
+      }
+
+      .m#{$infix}-#{$name} {
+        margin: $spacing;
+      }
+
+      .mb#{$infix}-#{$name} {
+        margin-bottom: $spacing;
+      }
+
+      .mt#{$infix}-#{$name} {
+        margin-top: $spacing;
+      }
+
+      .my#{$infix}-#{$name} {
+        margin-top: $spacing;
+        margin-bottom: $spacing;
+      }
+
+      .mr#{$infix}-#{$name} {
+        margin-right: $spacing;
+      }
+
+      .ml#{$infix}-#{$name} {
+        margin-left: $spacing;
+      }
+
+      .mx#{$infix}-#{$name} {
+        margin-left: $spacing;
+        margin-right: $spacing;
+      }
+
+      .p#{$infix}-#{$name} {
+        padding: $spacing;
+      }
+
+      .pb#{$infix}-#{$name} {
+        padding-bottom: $spacing;
+      }
+
+      .pr#{$infix}-#{$name} {
+        padding-right: $spacing;
+      }
+
+      .pl#{$infix}-#{$name} {
+        padding-left: $spacing;
+      }
+
+      .pt#{$infix}-#{$name} {
+        padding-top: $spacing;
+      }
+
+      .px#{$infix}-#{$name} {
+        padding-left: $spacing;
+        padding-right: $spacing;
+      }
+
+      .py#{$infix}-#{$name} {
+        padding-top: $spacing;
+        padding-bottom: $spacing;
+      }
+    }
+  }
+}

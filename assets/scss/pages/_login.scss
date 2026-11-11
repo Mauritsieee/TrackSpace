@@ -1,0 +1,31 @@
+body.page-login,
+body.page-register {
+  #content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .login-card {
+      @extend .card;
+      padding: 2rem;
+
+      &-header {
+        text-align: center;
+
+        h1 {
+          margin-bottom: 0.5rem;
+        }
+
+        p {
+          color: $primary-6;
+          margin-top: 0;
+          font-size: 0.8rem;
+        }
+      }
+      &-footer {
+        p {
+          font-size: 0.8rem;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # API-verzoeken rechtstreeks afhandelen
+    RewriteRule ^api/ - [L]
+
+    # Directe toegang tot public/ blokkeren
+    RewriteRule ^public/ - [F,L]
+
+    # Overige verzoeken naar public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
