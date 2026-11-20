@@ -23,7 +23,7 @@ if (!isset($_COOKIE['sidebar-open'])) {
 $sidebarOpen = $_COOKIE['sidebar-open'] === 'true';
 
 ?>
-<body class="page-<?= htmlspecialchars(ts_page_slug(), ENT_QUOTES, 'UTF-8') ?> <?= $sidebarOpen ?: 'collapse-sidebar'; ?>">
+<body class="page-<?= htmlspecialchars(ts_page_slug(), ENT_QUOTES, 'UTF-8') ?><?= $sidebarOpen ? '': ' collapse-sidebar'; ?>">
 
     <?php require __DIR__ . '/sidebar.php'; ?>
     

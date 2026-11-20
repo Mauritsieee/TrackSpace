@@ -21,6 +21,14 @@ switch ($path) {
         $page = TS_ROOT . '/pages/projects/index.php';
         break;
 
+    case '/tasks':
+        $page = TS_ROOT . '/pages/tasks/index.php';
+        break;
+
+    case '/calendar':
+        $page = TS_ROOT . '/pages/calendar/index.php';
+        break;
+
     case '/settings':
         $page = TS_ROOT . '/pages/settings/index.php';
         break;

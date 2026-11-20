@@ -26,6 +26,9 @@ require_once TS_ROOT . '/core/database.php';
 require_once TS_ROOT . '/core/functions.php';
 require_once TS_ROOT . '/core/migrations.php';
 
+
+require_once TS_ROOT . '/handlers/custom-icons.php';
+
 ts_migrate();
 
 // Start session

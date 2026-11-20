@@ -1,6 +1,11 @@
 <?php
 
-if (!isset($_COOKIE['language'])) {
+define('AVAILABLE_LANGUAGES', array(
+    'nl' => 'Nederlands',
+    'en' => 'English'
+));
+
+if (!isset($_COOKIE['language']) || !array_key_exists($_COOKIE['language'], AVAILABLE_LANGUAGES)) {
     setcookie('language', 'en', time() + 31536000, '/');
     $_COOKIE['language'] = 'en';
 }

@@ -1,0 +1,12 @@
+%tags-styling {
+    font-size: 0.6rem;
+    padding: 4px 12px;
+    border-radius: 10rem;
+}
+
+.tag {
+    @extend %noselect;
+    @extend %tags-styling;
+    background-color: rgb(from var(--color, #{$primary-5}) r g b / 0.15);
+    color: var(--color, #{$primary-5});
+}

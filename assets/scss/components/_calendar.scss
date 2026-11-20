@@ -1,0 +1,35 @@
+.calendar-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding: 0.5rem;
+    text-align: center;
+  }
+
+  tbody {
+
+    td {
+        border: solid #eee 1px;
+    }
+    td.today {
+      background-color: $primary-3;
+      color: $primary-7;
+      font-weight: bold;
+    }
+
+    td.has-event {
+      font-weight: bold;
+    }
+  }
+
+  button {
+    --color: #191919;
+
+    svg {
+        width: 1rem;
+        height: 1rem;
+    }
+  }
+}

@@ -2,6 +2,8 @@
     $asideMenuItems = array(
         'dashboard' => "Dashboard",
         'projects' => "Projects",
+        'tasks' => "Tasks",
+        'calendar' => "Calendar",
         'settings' => "Settings",
     );
 ?>

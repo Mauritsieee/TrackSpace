@@ -25,13 +25,18 @@
 @import 'layout/body';
 @import 'layout/aside';
 @import 'layout/footer';
+@import 'layout/main-page';
 
 
 @import 'components/buttons';
+@import 'components/calendar';
+@import 'components/tags';
 @import 'components/cards';
 @import 'components/fields';
 @import 'components/ts-alert';
+@import 'components/form-popup';
 
 
 @import 'pages/login';
+@import 'pages/dashboard';
 
