@@ -9,7 +9,7 @@
         </div>
         <div class="col-3 mb-16">
             <div class="card link-card">
-                <div class="icon-wrapper" style="--color:#da42fb;">
+                <div class="icon-wrapper" style="--color:var(--primary-5);">
                     <?= ts_icon('square-check'); ?>
                 </div>
                 <div class="text-wrapper">
@@ -20,7 +20,7 @@
         </div>
         <div class="col-3 mb-16">
             <div class="card link-card">
-                <div class="icon-wrapper" style="--color:#1cbd15;">
+                <div class="icon-wrapper" style="--color:var(--success);">
                     <?= ts_icon('calendar'); ?>
                 </div>
                 <div class="text-wrapper">
@@ -31,7 +31,7 @@
         </div>
         <div class="col-3 mb-16">
             <div class="card link-card">
-                <div class="icon-wrapper" style="--color:#439dff;">
+                <div class="icon-wrapper" style="--color:var(--primary-6);">
                     <?= ts_icon('folder-open'); ?>
                 </div>
                 <div class="text-wrapper">
@@ -42,7 +42,7 @@
         </div>
         <div class="col-3 mb-16">
             <div class="card link-card">
-                <div class="icon-wrapper" style="--color:#ff8c43;">
+                <div class="icon-wrapper" style="--color:var(--warning);">
                     <?= ts_icon('clock'); ?>
                 </div>
                 <div class="text-wrapper">

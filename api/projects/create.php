@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $user = auth_user();
 $name = trim($_POST['name'] ?? '');
 $description = trim($_POST['description'] ?? '');
-$color = $_POST['color'] ?? '#7042D9';
+$color = $_POST['color'] ?? null;
 $priority = $_POST['priority'] ?? 'normal';
 
 if (empty($name)) {

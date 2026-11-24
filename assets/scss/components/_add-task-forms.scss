@@ -1,0 +1,250 @@
+// ==================
+// Add Task Forms
+// ==================
+
+// ---- Table View ----
+.table-add-task-btn {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  margin-top: 1rem;
+  background: none;
+  border: 2px dashed $primary-3;
+  border-radius: 8px;
+  color: $primary-5;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: $primary-5;
+    background: $primary-1;
+  }
+}
+
+.table-add-task-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  margin-top: 1rem;
+  background: $primary-1;
+  border: 1px solid $primary-3;
+  border-radius: 8px;
+  animation: slideIn 0.2s ease;
+
+  .table-task-input {
+    padding: 0.75rem 1rem;
+    border: 1px solid $primary-3;
+    border-radius: 6px;
+    font-size: 0.95rem;
+
+    &:focus {
+      border-color: $primary-5;
+      box-shadow: 0 0 0 3px rgba($primary-5, 0.1);
+    }
+  }
+
+  .table-form-actions {
+    display: flex;
+    gap: 0.5rem;
+
+    button {
+      flex: 1;
+      padding: 0.6rem 1rem;
+      border: none;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &.table-form-submit {
+        background: $primary-5;
+        color: $white;
+
+        &:hover {
+          background: $primary-6;
+        }
+      }
+
+      &.table-form-cancel {
+        background: $primary-2;
+        color: $text-color;
+
+        &:hover {
+          background: $primary-3;
+        }
+      }
+    }
+  }
+}
+
+// ---- List View ----
+.list-add-task-btn {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin-top: 0.5rem;
+  background: none;
+  border: 2px dashed $primary-3;
+  border-radius: 6px;
+  color: $primary-5;
+  font-weight: 500;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: $primary-5;
+    background: rgba($primary-5, 0.05);
+  }
+}
+
+.list-add-task-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  margin: 0.5rem 1rem;
+  background: $primary-1;
+  border: 1px solid $primary-3;
+  border-radius: 8px;
+  animation: slideIn 0.2s ease;
+
+  .list-task-input {
+    padding: 0.75rem 1rem;
+    border: 1px solid $primary-3;
+    border-radius: 6px;
+    font-size: 0.95rem;
+
+    &:focus {
+      border-color: $primary-5;
+      box-shadow: 0 0 0 3px rgba($primary-5, 0.1);
+    }
+  }
+
+  .list-form-actions {
+    display: flex;
+    gap: 0.5rem;
+
+    button {
+      flex: 1;
+      padding: 0.6rem 1rem;
+      border: none;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &.list-form-submit {
+        background: $primary-5;
+        color: $white;
+
+        &:hover {
+          background: $primary-6;
+        }
+      }
+
+      &.list-form-cancel {
+        background: $primary-2;
+        color: $text-color;
+
+        &:hover {
+          background: $primary-3;
+        }
+      }
+    }
+  }
+}
+
+// ---- Kanban View ----
+.kanban-add-task-btn {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin-top: 0.75rem;
+  background: none;
+  border: 2px dashed rgba(var(--status-color-rgb), 0.3);
+  border-radius: 6px;
+  color: var(--status-color);
+  font-weight: 500;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--status-color);
+    background: rgba(var(--status-color-rgb), 0.05);
+  }
+}
+
+.kanban-add-task-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  margin: 0.75rem 0;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid $primary-3;
+  border-radius: 8px;
+  animation: slideIn 0.2s ease;
+
+  .kanban-task-input {
+    padding: 0.75rem 1rem;
+    border: 1px solid $primary-3;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+
+    &:focus {
+      border-color: $primary-5;
+      box-shadow: 0 0 0 3px rgba($primary-5, 0.1);
+    }
+  }
+
+  .kanban-form-actions {
+    display: flex;
+    gap: 0.5rem;
+
+    button {
+      flex: 1;
+      padding: 0.6rem 1rem;
+      border: none;
+      border-radius: 6px;
+      font-weight: 500;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &.kanban-form-submit {
+        background: $primary-5;
+        color: $white;
+
+        &:hover {
+          background: $primary-6;
+        }
+      }
+
+      &.kanban-form-cancel {
+        background: $primary-2;
+        color: $text-color;
+
+        &:hover {
+          background: $primary-3;
+        }
+      }
+    }
+  }
+}
+
+// ---- Animation ----
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

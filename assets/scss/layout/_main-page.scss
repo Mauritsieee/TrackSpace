@@ -17,5 +17,11 @@ main#content {
         font-size: 0.85rem;
       }
     }
+
+    &-actions {
+      display: flex;
+      flex-direction: row-reverse;
+      gap: 1rem;
+    }
   }
 }

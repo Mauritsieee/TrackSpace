@@ -1,3 +1,5 @@
+<?php auth_required(); ?>
+
 <div class="page-header">
     <div class="page-header-text">
         <div class="page-header-text-title">
@@ -8,29 +10,20 @@
             <?= __('Manage all your projects.'); ?>
         </p>
     </div>
+    <div class="page-header-actions">
+        <button class="add_project_form btn-primary"><?= ts_icon('plus'); ?> <?= __('New project') ?></button>
+    </div>
 </div>
 <div class="page-main">
     <div class="container--fluid mt-30">
-        <div class="row">
-            <div class="col-5 mb-16">
-                
-            </div>
-
-            <div class="col-7 mb-16">
-                <div class="card">
-                    <h2><?= __('Projects') ?></h2>
-                    <div id="projectsList" style="margin-top: 1rem;"></div>
-                </div>
-            </div>
-        </div>
+        <div id="projectsList" class="row" style="margin-top: 1rem;"></div>
     </div>
 </div>
 
-<div class="form-popup-wrapper" id="">
+<div class="form-popup-wrapper" data-ts_popup="add_project_form" style="display:none;">
     <div class="card func-card">
         <div class="card-header">
             <div class="card-title">
-                <?= ts_icon('plus'); ?>
                 <h2><?= __('New project') ?></h2>
             </div>
         </div>
@@ -48,16 +41,12 @@
                 
                 <div class="form-group">
                     <label for="projectPriority"><?= __('Priority') ?></label>
-                    <select id="projectPriority" name="priority">
-                        <option value="low">Low</option>
-                        <option value="normal" selected>Normal</option>
-                        <option value="high">High</option>
-                    </select>
+                    <select id="projectPriority" name="priority"></select>
                 </div>
 
                 <div class="form-group">
                     <label for="projectColor"><?= __('Color') ?></label>
-                    <input type="color" id="projectColor" name="color" value="#7042D9">
+                    <input type="color" id="projectColor" name="color">
                 </div>
                 
                 <input type="submit" value="<?= __('Create') ?>" class="btn-outline">
@@ -65,5 +54,3 @@
         </div>
     </div>
 </div>
-
-<script src="<?= ts_url('/assets/js/projects/manager.js') ?>"></script>

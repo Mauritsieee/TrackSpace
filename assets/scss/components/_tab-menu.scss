@@ -1,0 +1,34 @@
+.tab-menu {
+  &-headers {
+    display: flex;
+    gap: 1.5rem;
+    border-bottom: 1px solid $primary-2;
+  }
+  
+  &-button {
+    @extend %center-flex;
+    padding: 1rem 0.5rem;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &.active {
+      color: $primary-5;
+      border-bottom-color: $primary-5;
+    }
+    
+    &:hover:not(.active) {
+      color: $primary-4;
+    }
+  }
+  
+  &-body {
+    padding-top: 1.5rem;
+  }
+  
+  &-panel {
+    display: none;
+  }
+}

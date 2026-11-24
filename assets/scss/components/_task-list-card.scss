@@ -1,0 +1,122 @@
+.task-list-section {
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid $primary-2;
+  
+  &-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    cursor: pointer;
+    user-select: none;
+    
+    .section-collapse-toggle {
+      background: none;
+      border: none;
+      font-size: 0.75rem;
+      cursor: pointer;
+      color: $text-color;
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+    }
+    
+    .section-status-icon {
+      display: inline-block;
+      width: 0.75rem;
+      height: 0.75rem;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    
+    .task-list-section-title {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 600;
+      flex: 1;
+    }
+    
+    .section-count {
+      display: inline-block;
+      min-width: 1.5rem;
+      padding: 0.25rem 0.5rem;
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-align: center;
+    }
+  }
+  
+  &-body {
+    padding: 0;
+    min-height: 50px;
+    transition: all 0.2s ease;
+    
+    &.collapsed {
+      display: none;
+    }
+    
+    .task-list-card {
+      @extend .card--full;
+      padding: 0.75rem 1rem;
+      display: grid;
+      grid-template-columns: auto 1fr auto auto auto;
+      align-items: center;
+      gap: 1rem;
+      margin: 0;
+      cursor: grab;
+      border: none;
+      border-bottom: 1px solid $primary-2;
+      border-radius: 0;
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      &:hover {
+        background: rgba($primary-3, 0.1);
+      }
+
+      .task-title {
+        min-width: 150px;
+      }
+
+      .task-meta {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        font-size: 0.75rem;
+        color: #666;
+      }
+
+      .task-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        white-space: nowrap;
+        
+        svg {
+          width: 0.9rem;
+          height: 0.9rem;
+        }
+      }
+
+      .task-tags {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .delete-task {
+        margin-left: 0;
+      }
+    }
+  }
+}
+
+.sortable-ghost {
+  opacity: 0.5;
+  background: rgba($primary-3, 0.3);
+}
+

@@ -82,7 +82,7 @@ function auth_logout(): void
 function auth_required(): void
 {
     if (!auth_check()) {
-        header('Location: /login');
+        header('Location: ' . ts_url('/login'));
         exit;
     }
 }

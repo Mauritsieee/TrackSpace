@@ -1,0 +1,50 @@
+.task-detail-card {
+  @extend .card;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 600px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+
+  .task-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+
+    h2,p {
+      margin: 0;
+    }
+
+    .actions {
+      display: flex;
+      gap: 1rem;
+    }
+  }
+
+  .task-detail-main {
+    margin-bottom: 1.5rem;
+    .description {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      textarea {
+        flex: 1;
+      }
+    }
+
+    .task-detail-form {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 1rem;
+
+      label {
+        margin-bottom: 0;
+      }
+    }
+  }
+}

@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../../core/bootstrap.php';
+auth_required();
 
 header('Content-Type: application/json; charset=utf-8');
 

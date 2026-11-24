@@ -24,6 +24,16 @@ return function (PDO $db): void {
     ");
 
     $db->exec("
+        CREATE TABLE IF NOT EXISTS priority_levels (
+            id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(50) NOT NULL,
+            slug VARCHAR(50) NOT NULL UNIQUE,
+            color VARCHAR(7) NOT NULL DEFAULT '#a78bfa',
+            position INT UNSIGNED NOT NULL DEFAULT 0
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
+
+    $db->exec("
         CREATE TABLE IF NOT EXISTS projects (
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             name VARCHAR(150) NOT NULL,
@@ -118,8 +128,19 @@ return function (PDO $db): void {
     // Insert default task statuses
     $db->exec("
         INSERT IGNORE INTO task_statuses (id, name, slug, color, position, is_completed) VALUES
-        (1, 'To Do', 'todo', '#7042D9', 0, 0),
-        (2, 'In Progress', 'in_progress', '#1CBD15', 1, 0),
-        (3, 'Done', 'done', '#439DFF', 2, 1)
+        (1, 'Backlog', 'backlog', '#94A3B8', 0, 0),
+        (2, 'To Do', 'todo', '#7042D9', 1, 0),
+        (3, 'In Progress', 'in_progress', '#1CBD15', 2, 0),
+        (4, 'Done', 'done', '#439DFF', 4, 1),
+        (5, 'On Hold', 'on_hold', '#F59E0B', 3, 0),
+        (6, 'Cancelled', 'cancelled', '#EF4444', 5, 0)
+    ");
+
+    // Insert default priority levels
+    $db->exec("
+        INSERT IGNORE INTO priority_levels (id, name, slug, color, position) VALUES
+        (1, 'Low', 'low', '#69db7c', 0),
+        (2, 'Normal', 'normal', '#a78bfa', 1),
+        (3, 'High', 'high', '#ff6b6b', 2)
     ");
 };

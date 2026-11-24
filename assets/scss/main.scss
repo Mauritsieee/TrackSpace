@@ -34,9 +34,18 @@
 @import 'components/cards';
 @import 'components/fields';
 @import 'components/ts-alert';
+@import 'components/ts-confirm';
 @import 'components/form-popup';
+@import 'components/project-card';
+@import 'components/task-list-card';
+@import 'components/task-kanban-card';
+@import 'components/task-table';
+@import 'components/add-task-forms';
+@import 'components/task-detail';
+@import 'components/tab-menu';
 
 
 @import 'pages/login';
 @import 'pages/dashboard';
+@import 'pages/project';
 

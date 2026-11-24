@@ -1,0 +1,14 @@
+.ts-confirm {
+    position:fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    @extend .card;
+
+    .ts-confirm-yes {
+        @extend .btn-primary;
+    }
+    .ts-confirm-no {
+        @extend .btn-outline;
+    }
+}
