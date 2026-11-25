@@ -18,8 +18,7 @@ $priorities = $task['priorities'] ?? [];
             <p><?= htmlspecialchars($task['description'] ?? '') ?></p>
         </div>
         <div class="actions">
-            <button class="btn-colored"><?= ts_icon('trash'); ?></button>
-            <button class="btn-colored task_details"><?= ts_icon('cross'); ?></button>
+            <button class="btn-colored task-delete-btn" data-task-id="<?= $taskId ?>"><?= ts_icon('trash'); ?></button>
         </div>
     </div>
     <div class="task-detail-main">

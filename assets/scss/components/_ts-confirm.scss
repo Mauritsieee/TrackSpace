@@ -5,6 +5,10 @@
     transform: translateX(-50%);
     @extend .card;
 
+    p {
+        margin-top: 0;
+    }
+
     .ts-confirm-yes {
         @extend .btn-primary;
     }

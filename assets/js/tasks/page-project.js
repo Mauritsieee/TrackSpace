@@ -86,6 +86,11 @@ jQuery(function($) {
 
     $('.tasks-view-toggle button').on('click', function() {
         const view = $(this).text().toLowerCase();
+        
+        // Update the 'current' class
+        $('.tasks-view-toggle button').removeClass('current');
+        $(this).addClass('current');
+        
         loadTasks(view);
     });
 
@@ -151,38 +156,15 @@ function createTaskQuick(title, statusId, callback) {
                         if (callback) callback();
                     });
                 } else if (window.currentView === 'tabel') {
-                    // Voeg rij toe aan de tabel
-                    const status = window.statuses[newTask.status_id];
-                    const dueDate = newTask.due_date ? new Date(newTask.due_date).toLocaleDateString('nl-NL') : '-';
-                    
-                    const $row = $(`<tr class="task-table-row task_details" data-task-id="${newTask.id}" data-status="${newTask.status_id}">
-                        <td class="col-checkbox">
-                            <input type="checkbox" class="task-checkbox" data-id="${newTask.id}">
-                        </td>
-                        <td class="col-title">${escapeHtml(newTask.title)}</td>
-                        <td class="col-status">
-                            <span class="status-badge" style="background-color: ${status.color}">
-                                ${escapeHtml(status.name)}
-                            </span>
-                        </td>
-                        <td class="col-deadline">
-                            ${dueDate}
-                        </td>
-                        <td class="col-priority">
-                            <span class="priority-badge" style="background-color: ${newTask.priority_color}">
-                                ${capitalizeFirst(newTask.priority)}
-                            </span>
-                        </td>
-                        <td class="col-actions">
-                            <button class="delete-task" data-id="${newTask.id}">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                            </button>
-                        </td>
-                    </tr>`);
-                    
+                    // Use template for table row
                     const $tbody = $('.tasks-table tbody');
-                    $tbody.append($row);
-                    attachTaskDetailHandlers();
+                    ts_template('task-table-row', newTask, function(html) {
+                        $tbody.append(html);
+                        attachTaskHandlers();
+                        attachTaskDetailHandlers();
+                        ts_alert('Task created', 'success');
+                        if (callback) callback();
+                    });
                     ts_alert('Task created', 'success');
                     if (callback) callback();
                 } else {

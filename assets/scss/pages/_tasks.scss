@@ -1,0 +1,30 @@
+body.page-tasks {
+    .project-table,
+    .task-table {
+        @include table-styling;
+
+        tbody {
+            td {
+                word-break: break-word;
+            }
+        }
+    }
+
+    #projects-counter {
+        @include table-styling;
+
+        tbody {
+            td:last-child {
+                text-align: right;
+                font-weight: 600;
+            }
+        }
+    }
+
+    .task-widget-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+}

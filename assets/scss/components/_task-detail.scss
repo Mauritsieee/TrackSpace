@@ -5,8 +5,9 @@
   left: 50%;
   transform: translate(-50%, -50%);
   width: 90%;
-  max-width: 600px;
-  max-height: 85vh;
+  min-width: 600px;
+  max-width: 67vw;
+  min-height: 85vh;
   display: flex;
   flex-direction: column;
 

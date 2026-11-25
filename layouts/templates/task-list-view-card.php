@@ -30,8 +30,4 @@ $priorityColor = $task['priority_color'];
             <?= ucfirst(htmlspecialchars($task['priority'] ?? 'normal')) ?>
         </span>
     </div>
-    
-    <button class="delete-task btn-colored" data-id="<?= $task['id'] ?>">
-        <?= ts_icon('trash'); ?>
-    </button>
 </div>

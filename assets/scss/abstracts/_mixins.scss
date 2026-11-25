@@ -18,3 +18,54 @@
   justify-content: center;
   align-items: center;
 }
+
+@mixin table-styling {
+  width: 100%;
+  border-collapse: collapse;
+  background: $full-white;
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 0.9rem;
+
+  thead {
+    background: $primary-2;
+    
+    th {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: $text-color;
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid $primary-2;
+      transition: background 0.15s ease;
+
+      &:hover {
+        background: $primary-1;
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      td {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+        vertical-align: middle;
+      }
+      .project-badge,
+      .status-badge,
+      .priority-badge {
+        background-color: var(--badge-color);
+        color: color-mix(in srgb, var(--badge-color) 35%, black);
+        padding: 4px;
+        border-radius: 6px;
+        text-wrap: nowrap;
+      }
+    }
+  }
+}

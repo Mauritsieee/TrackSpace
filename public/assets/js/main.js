@@ -618,6 +618,11 @@ jQuery(function($) {
 
     $('.tasks-view-toggle button').on('click', function() {
         const view = $(this).text().toLowerCase();
+        
+        // Update the 'current' class
+        $('.tasks-view-toggle button').removeClass('current');
+        $(this).addClass('current');
+        
         loadTasks(view);
     });
 
@@ -683,38 +688,15 @@ function createTaskQuick(title, statusId, callback) {
                         if (callback) callback();
                     });
                 } else if (window.currentView === 'tabel') {
-                    // Voeg rij toe aan de tabel
-                    const status = window.statuses[newTask.status_id];
-                    const dueDate = newTask.due_date ? new Date(newTask.due_date).toLocaleDateString('nl-NL') : '-';
-                    
-                    const $row = $(`<tr class="task-table-row task_details" data-task-id="${newTask.id}" data-status="${newTask.status_id}">
-                        <td class="col-checkbox">
-                            <input type="checkbox" class="task-checkbox" data-id="${newTask.id}">
-                        </td>
-                        <td class="col-title">${escapeHtml(newTask.title)}</td>
-                        <td class="col-status">
-                            <span class="status-badge" style="background-color: ${status.color}">
-                                ${escapeHtml(status.name)}
-                            </span>
-                        </td>
-                        <td class="col-deadline">
-                            ${dueDate}
-                        </td>
-                        <td class="col-priority">
-                            <span class="priority-badge" style="background-color: ${newTask.priority_color}">
-                                ${capitalizeFirst(newTask.priority)}
-                            </span>
-                        </td>
-                        <td class="col-actions">
-                            <button class="delete-task" data-id="${newTask.id}">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                            </button>
-                        </td>
-                    </tr>`);
-                    
+                    // Use template for table row
                     const $tbody = $('.tasks-table tbody');
-                    $tbody.append($row);
-                    attachTaskDetailHandlers();
+                    ts_template('task-table-row', newTask, function(html) {
+                        $tbody.append(html);
+                        attachTaskHandlers();
+                        attachTaskDetailHandlers();
+                        ts_alert('Task created', 'success');
+                        if (callback) callback();
+                    });
                     ts_alert('Task created', 'success');
                     if (callback) callback();
                 } else {
@@ -743,6 +725,147 @@ function createTaskQuick(title, statusId, callback) {
         }
     });
 }
+
+jQuery(function($) {
+    function loadTasksData() {
+        return $.when(
+            $.ajax({
+                url: ts_url('/api/tasks/statuses.php'),
+                type: 'GET',
+                dataType: 'json'
+            }),
+            $.ajax({
+                url: ts_url('/api/tasks/priorities.php'),
+                type: 'GET',
+                dataType: 'json'
+            }),
+            $.ajax({
+                url: ts_url('/api/users/list.php'),
+                type: 'GET',
+                dataType: 'json'
+            })
+        ).done(function(statusRes, priorityRes, userRes) {
+            window.statuses = {};
+            if (statusRes[0].success) {
+                statusRes[0].statuses.forEach(function(status) {
+                    window.statuses[status.id] = status;
+                });
+            }
+            
+            window.priorities = {};
+            if (priorityRes[0].success) {
+                priorityRes[0].priorities.forEach(function(priority) {
+                    window.priorities[priority.slug] = priority.color;
+                });
+            }
+            
+            window.users = {};
+            if (userRes[0].success) {
+                userRes[0].users.forEach(function(user) {
+                    window.users[user.id] = user.name;
+                });
+            }
+        });
+    }
+
+    function loadTasks() {
+        $.ajax({
+            url: ts_url('/api/tasks/list.php?all=1'),
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    const tasks = response.tasks;
+                    const $table = $('#task-table');
+                    $table.html('');
+                    
+                    if (tasks.length === 0) {
+                        $table.html('<tr><td colspan="9" style="text-align: center; color: #999;">No tasks yet</td></tr>');
+                        return;
+                    }
+                    
+                    tasks.forEach(function(task) {
+                        ts_template('task-table-detailed', task, function(html) {
+                            $table.append(html);
+                        });
+                    });
+                    
+                    attachTaskDetailHandlers();
+                } else {
+                    ts_alert(response.message || 'Error loading tasks', 'danger');
+                }
+            },
+            error: function() {
+                ts_alert('Error loading tasks', 'danger');
+            }
+        });
+    }
+    
+    function loadProjectsCounter() {
+        $.ajax({
+            url: ts_url('/api/projects/list.php'),
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    const projects = response.projects;
+                    const $table = $('#projects-counter');
+                    $table.html('');
+                    
+                    if (projects.length === 0) {
+                        $table.html('<tr><td colspan="2" style="text-align: center; color: #999;">No projects yet</td></tr>');
+                        return;
+                    }
+                    
+                    projects.forEach(function(project) {
+                        const $row = $(`<tr>
+                            <td>${escapeHtml(project.name)}</td>
+                            <td>${project.task_count || 0}</td>
+                        </tr>`);
+                        
+                        $table.append($row);
+                    });
+                } else {
+                    ts_alert(response.message || 'Error loading projects', 'danger');
+                }
+            },
+            error: function() {
+                ts_alert('Error loading projects', 'danger');
+            }
+        });
+    }
+    
+    if ($('#task-table').length > 0) {
+        loadTasksData().done(function() {
+            loadTasks();
+        });
+    }
+    
+    if ($('#projects-counter').length > 0) {
+        loadProjectsCounter();
+    }
+    
+    window.loadAllTasks = loadTasks;
+    window.loadProjectsCounter = loadProjectsCounter;
+});
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+function capitalizeFirst(str) {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 
 
 
@@ -1160,12 +1283,10 @@ function renderTaskTableView(tasks, statuses) {
         <table class="tasks-table">
             <thead>
                 <tr>
-                    <th class="col-checkbox"></th>
                     <th class="col-title">Titel</th>
                     <th class="col-status">Status</th>
                     <th class="col-deadline">Deadline</th>
                     <th class="col-priority">Prioriteit</th>
-                    <th class="col-actions"></th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -1177,35 +1298,9 @@ function renderTaskTableView(tasks, statuses) {
     const $addBtn = $container.find('.table-add-task-btn');
 
     tasks.forEach(task => {
-        const status = statuses[task.status_id];
-        const dueDate = task.due_date ? new Date(task.due_date).toLocaleDateString('nl-NL') : '-';
-
-        const $row = $(`<tr class="task-table-row" data-task-id="${task.id}" data-status="${task.status_id}">
-            <td class="col-checkbox">
-                <input type="checkbox" class="task-checkbox" data-id="${task.id}">
-            </td>
-            <td class="col-title">${escapeHtml(task.title)}</td>
-            <td class="col-status">
-                <span class="status-badge" style="background-color: ${status.color}">
-                    ${escapeHtml(status.name)}
-                </span>
-            </td>
-            <td class="col-deadline">
-                ${dueDate}
-            </td>
-            <td class="col-priority">
-                <span class="priority-badge" style="background-color: ${task.priority_color}">
-                    ${capitalizeFirst(task.priority)}
-                </span>
-            </td>
-            <td class="col-actions">
-                <button class="delete-task" data-id="${task.id}">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                </button>
-            </td>
-        </tr>`);
-
-        $tbody.append($row);
+        ts_template('task-table-row', task, function(html) {
+            $tbody.append(html);
+        });
     });
 
     $addBtn.on('click', function(e) {

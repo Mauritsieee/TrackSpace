@@ -90,3 +90,28 @@
     height: 1.5rem;
   }
 }
+
+.btns-connected-wrapper {
+  display: flex;
+  align-items: center;
+  background-color: $primary-2;
+  border-radius: 6px;
+  border:solid $primary-3 1px;
+  
+  button,a{
+    display: block;
+    color: $primary-4;
+    
+    margin: 0;
+    padding: 6px 8px;
+    cursor: pointer;
+    transition: 200ms ease-out;
+    
+    &.current {
+      border-radius: 6px;
+      border:solid $primary-3 1px;
+      background-color: $primary-3;
+      color: $primary-5;
+    }
+  }
+}

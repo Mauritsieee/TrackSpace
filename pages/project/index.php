@@ -38,13 +38,10 @@ include_once __DIR__ . '/handler.php';
                 <div class="tasks-panel">
                     <div class="tasks-panel-header">
                         <h2>Tasks</h2>
-                        <div class="tasks-view-toggle">
-                            <button class="btn-primary">Kanban</button>
-                            <button class="btn-primary">Lijst</button>
-                            <button class="btn-primary">Tabel</button>
-                        </div>
-                        <div class="header-actions">
-                            <button class="add_task_form btn-outline">Add task</button>
+                        <div class="tasks-view-toggle btns-connected-wrapper">
+                            <button<?= (($_COOKIE['taskView-' . $project_id] ?? 'list') === 'kanban') ? ' class="current"' : '' ?>>Kanban</button>
+                            <button<?= (($_COOKIE['taskView-' . $project_id] ?? 'list') === 'list') ? ' class="current"' : '' ?>>Lijst</button>
+                            <button<?= (($_COOKIE['taskView-' . $project_id] ?? 'list') === 'tabel') ? ' class="current"' : '' ?>>Tabel</button>
                         </div>
                     </div>
                 </div>
