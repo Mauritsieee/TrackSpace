@@ -1,3 +1,5 @@
+<?php auth_required(); ?>
+
 <div class="page-header">
     <div class="page-header-text">
         <div class="page-header-text-title">
