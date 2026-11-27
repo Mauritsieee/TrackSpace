@@ -20,7 +20,7 @@ jQuery(function($) {
                 }
             },
             error: function(xhr) {
-                ts_alert('Er ging iets mis!');
+                ts_alert(ts_translate('Something went wrong.'), 'danger');
             },
             complete: function() {
                 $button.prop('disabled', false);

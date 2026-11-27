@@ -6,7 +6,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['success' => false, 'message' => 'Method not allowed.']);
+    echo json_encode(['success' => false, 'message' => __('Method not allowed.')]);
     exit;
 }
 
@@ -18,7 +18,7 @@ $priority = $_POST['priority'] ?? 'normal';
 
 if (empty($name)) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Project name is required.']);
+    echo json_encode(['success' => false, 'message' => __('Project name is required.')]);
     exit;
 }
 
@@ -31,4 +31,4 @@ $id = db_insert('projects', [
     'created_by' => $user['id']
 ]);
 
-echo json_encode(['success' => true, 'message' => 'Project created.', 'id' => $id]);
+echo json_encode(['success' => true, 'message' => __('Project created.'), 'id' => $id]);

@@ -1,4 +1,4 @@
-jQuery(function($) {
+
     window.TaskManager = {
         statuses: function(callback) {
             $.ajax({
@@ -13,7 +13,7 @@ jQuery(function($) {
                     }
                 },
                 error: function() {
-                    callback('Error loading statuses');
+                    callback(ts_translate('Error loading statuses'));
                 }
             });
         },
@@ -32,7 +32,34 @@ jQuery(function($) {
                     }
                 },
                 error: function() {
-                    callback('Error loading tasks');
+                    callback(ts_translate('Error loading tasks'));
+                }
+            });
+        },
+
+        listAll: function(filters, callback) {
+            // Backward compatibility: if filters is a function, it's the callback
+            if (typeof filters === 'function') {
+                callback = filters;
+                filters = {};
+            }
+            
+            const queryParams = $.extend({ all: 1 }, filters);
+            
+            $.ajax({
+                url: ts_url('/api/tasks/list.php'),
+                type: 'GET',
+                data: $.param(queryParams), // Without true, arrays become statuses[]=1&statuses[]=2 etc
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        callback(null, response.tasks);
+                    } else {
+                        callback(response.message);
+                    }
+                },
+                error: function() {
+                    callback(ts_translate('Error loading tasks'));
                 }
             });
         },
@@ -51,7 +78,7 @@ jQuery(function($) {
                     }
                 },
                 error: function() {
-                    callback('Error creating task');
+                    callback(ts_translate('Error creating task'));
                 }
             });
         },
@@ -70,7 +97,7 @@ jQuery(function($) {
                     }
                 },
                 error: function() {
-                    callback('Error updating task');
+                    callback(ts_translate('Error updating task'));
                 }
             });
         },
@@ -89,10 +116,10 @@ jQuery(function($) {
                     }
                 },
                 error: function() {
-                    callback('Error deleting task');
+                    callback(ts_translate('Error deleting task'));
                 }
             });
         }
     };
-});
+
 

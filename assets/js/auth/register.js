@@ -21,7 +21,7 @@ jQuery(function($) {
                 }
             },
             error: function(xhr) {
-                ts_alert(xhr.responseJSON?.message || 'Er ging iets mis!', 'danger');
+                ts_alert(xhr.responseJSON?.message || ts_translate('Something went wrong.'), 'danger');
             },
             complete: function() {
                 $button.prop('disabled', false);

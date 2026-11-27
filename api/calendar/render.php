@@ -7,7 +7,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['success' => false, 'message' => 'Method not allowed.']);
+    echo json_encode(['success' => false, 'message' => __('Method not allowed.')]);
     exit;
 }
 
@@ -23,7 +23,7 @@ function has_event($day, $month, $year) {
 
 $html = '<table class="calendar-table"><thead><tr>';
 $html .= '<th><button class="btn-colored calendar-prev"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left preview-icon"><path d="m15 18-6-6 6-6"/></svg></button></th>';
-$html .= '<th colspan="5">' . date('F Y', $firstDay) . '</th>';
+$html .= '<th colspan="5">' . __(date('F', $firstDay)) . ' ' . date('Y', $firstDay) . '</th>';
 $html .= '<th><button class="btn-colored calendar-next"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right preview-icon"><path d="m9 18 6-6-6-6"/></svg></button></th>';
 $html .= '</tr><tr>';
 

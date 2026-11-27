@@ -6,7 +6,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['success' => false, 'message' => 'Method not allowed.']);
+    echo json_encode(['success' => false, 'message' => __('Method not allowed.')]);
     exit;
 }
 
@@ -20,7 +20,7 @@ $dueDate = $_POST['due_date'] ?? null;
 
 if (!$title) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Task title is required.']);
+    echo json_encode(['success' => false, 'message' => __('Task title is required.')]);
     exit;
 }
 
@@ -28,11 +28,18 @@ $project = db_select("SELECT id FROM projects WHERE id = ? AND created_by = ?", 
 
 if (empty($project)) {
     http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Project not found.']);
+    echo json_encode(['success' => false, 'message' => __('Project not found.')]);
     exit;
 }
 
-$taskId = db_insert('tasks', [
+$status = db_select("SELECT is_completed FROM task_statuses WHERE id = ?", [$statusId]);
+if (empty($status)) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => __('Invalid task status.')]);
+    exit;
+}
+
+$taskData = [
     'project_id' => $projectId,
     'title' => $title,
     'description' => $description ?: null,
@@ -40,7 +47,11 @@ $taskId = db_insert('tasks', [
     'status_id' => $statusId,
     'due_date' => $dueDate ?: null,
     'created_by' => $user['id']
-]);
+];
+if ((bool) $status[0]['is_completed']) {
+    $taskData['completed_at'] = db_select("SELECT NOW() AS completed_at")[0]['completed_at'];
+}
+$taskId = db_insert('tasks', $taskData);
 
 // Fetch the created task with priority color
 $task = db_select("
@@ -52,4 +63,4 @@ $task = db_select("
     WHERE t.id = ?
 ", [$taskId]);
 
-echo json_encode(['success' => true, 'task_id' => $taskId, 'task' => $task[0] ?? null, 'message' => 'Task created.']);
+echo json_encode(['success' => true, 'task_id' => $taskId, 'task' => $task[0] ?? null, 'message' => __('Task created.')]);

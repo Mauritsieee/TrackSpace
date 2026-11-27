@@ -1,4 +1,4 @@
-function ts_confirm(message, yesText = 'Yes', noText = 'No') {
+function ts_confirm(message, yesText = ts_translate('Yes'), noText = ts_translate('No')) {
     return new Promise(function(resolve) {
         const $confirm = $('<div class="ts-confirm"></div>')
             .html(`

@@ -13,7 +13,7 @@
                     <?= ts_icon('square-check'); ?>
                 </div>
                 <div class="text-wrapper">
-                    <div class="h4 value">25</div>
+                    <div class="h4 value">-</div>
                     <p class="description"><?= __('Open tasks') ?></p>
                 </div>
             </div>
@@ -24,7 +24,7 @@
                     <?= ts_icon('calendar'); ?>
                 </div>
                 <div class="text-wrapper">
-                    <div class="h4 value">4</div>
+                    <div class="h4 value">-</div>
                     <p class="description"><?= __('Appointments today') ?></p>
                 </div>
             </div>
@@ -35,7 +35,7 @@
                     <?= ts_icon('folder-open'); ?>
                 </div>
                 <div class="text-wrapper">
-                    <div class="h4 value">4</div>
+                    <div class="h4 value">-</div>
                     <p class="description"><?= __('Active projects') ?></p>
                 </div>
             </div>
@@ -46,61 +46,58 @@
                     <?= ts_icon('clock'); ?>
                 </div>
                 <div class="text-wrapper">
-                    <div class="h4 value">6,5 u</div>
+                    <div class="h4 value">0m</div>
                     <p class="description"><?= __('Scheduled time') ?></p>
                 </div>
             </div>
         </div>
 
-        <div class="col-5 mb-16">
+        <div class="col-4 mb-16">
             <div class="card func-card">
                 <div class="card-header">
                     <div class="card-title">
                         <?= ts_icon('square-text'); ?>
-                        <h2><?= __('My tasks') ?></h2>
-                    </div>
-                    <div class="btn-colored">
-                        <?= ts_icon('plus'); ?>
+                        <h2><?= __('Priority tasks') ?></h2>
                     </div>
                 </div>
                 <div class="card-main">
-                    <div class="tasklist-wrapper">
-                        <div class="task">
-                            <input type="checkbox" id="dummy-task-1" checked>
-                            <label for="dummy-task-1">Lorem ipsum dolor sit amet.</label>
-                            <span><?= __('Today') ?></span>
-                        </div>
-                    
-                        <div class="task">
-                            <input type="checkbox" id="dummy-task-2">
-                            <label for="dummy-task-2">Lorem ipsum dolor sit amet.</label>
-                            <span><?= __('Today') ?></span>
-                        </div>
-                    
-                        <div class="task">
-                            <input type="checkbox" id="dummy-task-3">
-                            <label for="dummy-task-3">Lorem ipsum dolor sit amet.</label>
-                            <span><?= __('Today') ?></span>
-                        </div>
-                    
-                        <div class="task">
-                            <input type="checkbox" id="dummy-task-4">
-                            <label for="dummy-task-4">Lorem ipsum dolor sit amet.</label>
-                            <span><?= __('Today') ?></span>
-                        </div>
-                    
-                        <div class="task">
-                            <input type="checkbox" id="dummy-task-5">
-                            <label for="dummy-task-5">Lorem ipsum dolor sit amet.</label>
-                            <span><?= __('Today') ?></span>
-                        </div>
-                    </div>
+                    <table class="dashboard-tasks-table">
+                        <thead>
+                            <tr>
+                                <th><?= __('Name') ?></th>
+                                <th><?= __('Priority') ?></th>
+                                <th><?= __('Project') ?></th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboard-priority-tasks">
+                            <tr><td colspan="3" style="text-align: center; color: #999;"><?= __('Loading tasks...') ?></td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-        <div class="col-3 mb-16">
-            <div class="card">
-                <h2><?= __('Schedule today') ?></h2>
+        <div class="col-4 mb-16">
+            <div class="card func-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <?= ts_icon('square-text'); ?>
+                        <h2><?= __('Newest tasks') ?></h2>
+                    </div>
+                </div>
+                <div class="card-main">
+                    <table class="dashboard-tasks-table">
+                        <thead>
+                            <tr>
+                                <th><?= __('Name') ?></th>
+                                <th><?= __('Est. time') ?></th>
+                                <th><?= __('Project') ?></th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboard-newest-tasks">
+                            <tr><td colspan="3" style="text-align: center; color: #999;"><?= __('Loading tasks...') ?></td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
         <div class="col-4 mb-16">
@@ -117,44 +114,54 @@
                         <?= ts_icon('folder'); ?>
                         <h2><?= __('Projects') ?></h2>
                     </div>
-                    <div class="btn-colored">
-                        <?= ts_icon('plus'); ?>
-                    </div>
                 </div>
                 <div class="card-main">
                     <div class="projects-wrapper">
-                        <div class="project">
-                            <p class="name">Project 1</p>
-                            <progress min="0" max="100" value="8">8%</progress>
-                        </div>
-                        <div class="project">
-                            <p class="name">Project 2</p>
-                            <progress min="0" max="100" value="100">100%</progress>
-                        </div>
-                        <div class="project">
-                            <p class="name">Project 3</p>
-                            <progress min="0" max="100" value="95">95%</progress>
-                        </div>
-                        <div class="project">
-                            <p class="name">Project 4</p>
-                            <progress min="0" max="100" value="55">55%</progress>
-                        </div>
-                        <div class="project">
-                            <p class="name">Project 5</p>
-                            <progress min="0" max="100" value="23">23%</progress>
+                        <!-- Filled in using AJAX -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-4 mb-16">
+            <div class="card func-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <?= ts_icon('square-check'); ?>
+                        <h2><?= __('Tasks by status') ?></h2>
+                    </div>
+                </div>
+                <div class="card-main" id="dashboard-status-chart"
+                     data-loading="<?= htmlspecialchars(__('Loading task statuses...'), ENT_QUOTES, 'UTF-8') ?>"
+                     data-empty="<?= htmlspecialchars(__('No tasks yet'), ENT_QUOTES, 'UTF-8') ?>"
+                     data-error="<?= htmlspecialchars(__('Unable to load task statuses.'), ENT_QUOTES, 'UTF-8') ?>">
+                    <p class="dashboard-status-message" role="status"><?= __('Loading task statuses...') ?></p>
+                    <div class="dashboard-status-donut" hidden>
+                        <canvas id="dashboard-status-canvas" role="img"></canvas>
+                        <div class="dashboard-status-total" aria-hidden="true">
+                            <strong>0</strong>
+                            <span><?= __('Tasks') ?></span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-4 mb-16">
-            <div class="card">
-                <h2><?= __('Activity') ?></h2>
-            </div>
-        </div>
-        <div class="col-4 mb-16">
-            <div class="card">
-                <h2><?= __('Notes') ?></h2>
+            <div class="card func-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <?= ts_icon('square-check'); ?>
+                        <h2><?= __('Task activity per week') ?></h2>
+                    </div>
+                </div>
+                <div class="card-main" id="dashboard-activity-chart"
+                     data-created="<?= htmlspecialchars(__('Created'), ENT_QUOTES, 'UTF-8') ?>"
+                     data-completed="<?= htmlspecialchars(__('Completed'), ENT_QUOTES, 'UTF-8') ?>"
+                     data-error="<?= htmlspecialchars(__('Unable to load task activity.'), ENT_QUOTES, 'UTF-8') ?>">
+                    <p class="dashboard-activity-message" role="status"><?= __('Loading task activity...') ?></p>
+                    <div class="dashboard-activity-graph" hidden>
+                        <canvas id="dashboard-activity-canvas" role="img"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

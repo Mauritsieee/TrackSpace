@@ -6,15 +6,15 @@ function renderTaskTableView(tasks, statuses) {
         <table class="tasks-table">
             <thead>
                 <tr>
-                    <th class="col-title">Titel</th>
-                    <th class="col-status">Status</th>
-                    <th class="col-deadline">Deadline</th>
-                    <th class="col-priority">Prioriteit</th>
+                    <th class="col-title">${ts_translate('Title')}</th>
+                    <th class="col-status">${ts_translate('Status')}</th>
+                    <th class="col-deadline">${ts_translate('Deadline')}</th>
+                    <th class="col-priority">${ts_translate('Priority')}</th>
                 </tr>
             </thead>
             <tbody></tbody>
         </table>
-        <button class="table-add-task-btn">+ Add task</button>
+        <button class="table-add-task-btn">+ ${ts_translate('Add task')}</button>
     </div>`);
 
     const $tbody = $container.find('tbody');
@@ -32,10 +32,10 @@ function renderTaskTableView(tasks, statuses) {
         
         const $form = $(`
             <div class="table-add-task-form">
-                <input type="text" placeholder="New task..." class="table-task-input">
+                <input type="text" placeholder="${ts_translate('New task...')}" class="table-task-input">
                 <div class="table-form-actions">
-                    <button class="table-form-submit">Add</button>
-                    <button class="table-form-cancel">Cancel</button>
+                    <button class="table-form-submit">${ts_translate('Add')}</button>
+                    <button class="table-form-cancel">${ts_translate('Cancel')}</button>
                 </div>
             </div>
         `);
@@ -86,13 +86,13 @@ function attachTaskHandlers() {
         e.preventDefault();
         e.stopPropagation();
         const id = $(this).data('id');
-        ts_confirm('Delete this task?', 'Delete', 'Cancel').then(function(confirmed) {
+        ts_confirm(ts_translate('Delete this task?'), ts_translate('Delete'), ts_translate('Cancel')).then(function(confirmed) {
             if (confirmed) {
                 TaskManager.delete(id, function(err) {
                     if (err) {
                         ts_alert(err, 'danger');
                     } else {
-                        ts_alert('Task deleted', 'success');
+                        ts_alert(ts_translate('Task deleted'), 'success');
                         loadTasks();
                     }
                 });

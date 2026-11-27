@@ -13,7 +13,7 @@ jQuery(function($) {
                 }
             },
             error: function(xhr) {
-                ts_alert(xhr.responseJSON?.message || 'Logout failed.', 'danger');
+                ts_alert(xhr.responseJSON?.message || ts_translate('Logout failed.'), 'danger');
             }
         });
     });

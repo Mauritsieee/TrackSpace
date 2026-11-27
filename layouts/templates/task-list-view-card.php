@@ -12,14 +12,14 @@ $priorityColor = $task['priority_color'];
     </div>
     
     <div class="task-meta">
-        <span class="task-meta-item" title="Created">
+        <span class="task-meta-item" title="<?= htmlspecialchars(__('Created'), ENT_QUOTES, 'UTF-8') ?>">
             <?= ts_icon('calendar'); ?> <?= $createdAt ?>
         </span>
-        <span class="task-meta-item" title="Estimated">
+        <span class="task-meta-item" title="<?= htmlspecialchars(__('Estimated'), ENT_QUOTES, 'UTF-8') ?>">
             <?= ts_icon('clock'); ?> <?= $estimated ?>
         </span>
         <?php if ($task['assigned_to'] ?? null): ?>
-            <span class="task-meta-item" title="Assigned to">
+            <span class="task-meta-item" title="<?= htmlspecialchars(__('Assigned to'), ENT_QUOTES, 'UTF-8') ?>">
                 <?= ts_icon('user'); ?> <?= htmlspecialchars($task['assigned_to']) ?>
             </span>
         <?php endif; ?>
@@ -27,7 +27,7 @@ $priorityColor = $task['priority_color'];
     
     <div class="task-tags">
         <span class="priority-badge" style="background-color: <?= $priorityColor ?>;">
-            <?= ucfirst(htmlspecialchars($task['priority'] ?? 'normal')) ?>
+            <?= htmlspecialchars(__(ucfirst($task['priority'] ?? 'normal'))) ?>
         </span>
     </div>
 </div>

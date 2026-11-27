@@ -8,11 +8,6 @@ function renderTaskListView(tasks, statuses) {
     function renderStatus(statusId) {
         const status = statuses[statusId];
         const statusTasks = tasks.filter(t => t.status_id == statusId);
-        
-        if (statusTasks.length === 0) {
-            renderNextStatus();
-            return;
-        }
 
         const $section = $(`<div class="task-list-section">
             <div class="task-list-section-header" style="background-color: color-mix(in srgb, ${status.color} 12%, white)">
@@ -22,7 +17,7 @@ function renderTaskListView(tasks, statuses) {
                 <span class="section-count">${statusTasks.length}</span>
             </div>
             <div class="task-list-section-body" data-status="${statusId}"></div>
-            <button class="list-add-task-btn" data-status="${statusId}">+ Add task</button>
+            <button class="list-add-task-btn" data-status="${statusId}">+ ${ts_translate('Add task')}</button>
         </div>`);
 
         const $body = $section.find('.task-list-section-body');
@@ -51,10 +46,10 @@ function renderTaskListView(tasks, statuses) {
             
             const $form = $(`
                 <div class="list-add-task-form">
-                    <input type="text" placeholder="New task..." class="list-task-input" data-status="${statusIdValue}">
+                    <input type="text" placeholder="${ts_translate('New task...')}" class="list-task-input" data-status="${statusIdValue}">
                     <div class="list-form-actions">
-                        <button class="list-form-submit">Add</button>
-                        <button class="list-form-cancel">Cancel</button>
+                        <button class="list-form-submit">${ts_translate('Add')}</button>
+                        <button class="list-form-cancel">${ts_translate('Cancel')}</button>
                     </div>
                 </div>
             `);
@@ -86,6 +81,9 @@ function renderTaskListView(tasks, statuses) {
         });
 
         $list.append($section);
+        if (tasksPending === 0) {
+            renderNextStatus();
+        }
     }
 
     function renderNextStatus() {
@@ -112,7 +110,7 @@ function initDragDrop() {
             ghostClass: 'sortable-ghost',
             onEnd: function(evt) {
                 const taskRow = evt.item;
-                const taskId = taskRow.querySelector('.delete-task').dataset.id;
+                const taskId = taskRow.dataset.taskId;
                 const newStatusId = evt.to.dataset.status;
                 
                 TaskManager.update(taskId, { status_id: newStatusId }, function(err) {
@@ -131,13 +129,13 @@ function attachTaskHandlers() {
         e.preventDefault();
         e.stopPropagation();
         const id = $(this).data('id');
-        ts_confirm('Delete this task?', 'Delete', 'Cancel').then(function(confirmed) {
+        ts_confirm(ts_translate('Delete this task?'), ts_translate('Delete'), ts_translate('Cancel')).then(function(confirmed) {
             if (confirmed) {
                 TaskManager.delete(id, function(err) {
                     if (err) {
                         ts_alert(err, 'danger');
                     } else {
-                        ts_alert('Task deleted', 'success');
+                        ts_alert(ts_translate('Task deleted'), 'success');
                         loadTasks();
                     }
                 });

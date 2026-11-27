@@ -6,7 +6,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['success' => false, 'message' => 'Method not allowed.']);
+    echo json_encode(['success' => false, 'message' => __('Method not allowed.')]);
     exit;
 }
 
@@ -22,10 +22,10 @@ $task = db_select(
 
 if (empty($task)) {
     http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Task not found.']);
+    echo json_encode(['success' => false, 'message' => __('Task not found.')]);
     exit;
 }
 
 db_delete('tasks', 'id = ?', [$taskId]);
 
-echo json_encode(['success' => true, 'message' => 'Task deleted.']);
+echo json_encode(['success' => true, 'message' => __('Task deleted.')]);

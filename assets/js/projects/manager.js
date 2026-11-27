@@ -13,7 +13,7 @@ jQuery(function($) {
                     }
                 },
                 error: function() {
-                    callback('Error loading projects');
+                    callback(ts_translate('Error loading projects'));
                 }
             });
         },
@@ -32,7 +32,7 @@ jQuery(function($) {
                     }
                 },
                 error: function() {
-                    callback('Error creating project');
+                    callback(ts_translate('Error creating project'));
                 }
             });
         },
@@ -51,7 +51,7 @@ jQuery(function($) {
                     }
                 },
                 error: function() {
-                    callback('Error deleting project');
+                    callback(ts_translate('Error deleting project'));
                 }
             });
         }

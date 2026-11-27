@@ -1,5 +1,4 @@
 function ts_template(templateName, data, callback) {
-    console.log(templateName, data);
     $.ajax({
         url: ts_url('/api/templates/render.php'),
         type: 'POST',

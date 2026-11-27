@@ -1,106 +1,90 @@
 
-function openTaskDetail(taskId) {
-  $.get(ts_url(`/api/tasks/get.php?id=${taskId}`), function (response) {
-    if (response.success) {
-      const task = response.task;
-      task.statuses = window.statuses || {};
-      task.priorities = window.priorities || {};
-      task.users = window.users || {};
-
-      // Render the template
-      ts_template("task-detail", task, function (html) {
-        // Create a temporary popup wrapper
-        let $popup = $(".form-popup-wrapper.task-detail-popup");
-        if ($popup.length === 0) {
-          $popup = $(
-            `<div class="form-popup-wrapper task-detail-popup" style="display:none;"></div>`,
-          );
-          $("body").append($popup);
-        }
-
-        $popup.html(html);
-        $popup.fadeToggle();
-
-        // Setup close button
-        $popup
-          .find(".task-detail-close")
-          .off("click")
-          .on("click", function () {
-            $popup.fadeToggle();
-          });
-
-        // Setup delete button
-        $popup
-          .find(".task-delete-btn")
-          .off("click")
-          .on("click", function (e) {
-            e.preventDefault();
-            ts_confirm("Delete this task?", "Delete", "Cancel").then(
-              function (confirmed) {
-                if (confirmed) {
-                  TaskManager.delete(taskId, function (err) {
-                    if (err) {
-                      ts_alert(err, "danger");
-                    } else {
-                      ts_alert("Task deleted", "success");
-                      $popup.fadeToggle();
-                      window.currentView && loadTasks(window.currentView);
-                    }
-                  });
-                }
-              },
-            );
-          });
-
-        // Setup save button
-        $popup
-          .find(".btn-primary")
-          .off("click")
-          .on("click", function (e) {
-            e.preventDefault();
-            const formData = new FormData();
-            formData.append('id', taskId);
-            formData.append('title', $popup.find('h2').text() || task.title);
-            formData.append('description', $popup.find('textarea[name="description"]').val());
-            formData.append('status_id', $popup.find('#status').val());
-            formData.append('priority', $popup.find('#priority').val());
-            formData.append('start_date', $popup.find('#start_date').val());
-            formData.append('due_date', $popup.find('#deadline').val());
-            formData.append('estimated_minutes', $popup.find('#estimated_minutes').val());
-            formData.append('assigned_to', $popup.find('#assigned_to').val());
-
-            $.ajax({
-              url: ts_url('/api/tasks/update.php'),
-              type: 'POST',
-              data: formData,
-              processData: false,
-              contentType: false,
-              success: function (response) {
-                if (response.success) {
-                  ts_alert('Task saved', 'success');
-                  $popup.fadeToggle();
-                  if (window.currentView && window.loadTasks) {
-                    window.loadTasks(window.currentView);
-                  }
-                } else {
-                  ts_alert(response.message || 'Failed to save', 'danger');
-                }
-              },
-              error: function () {
-                ts_alert('Error saving task', 'danger');
-              }
-            });
-          });
-
-        // Close when clicking outside
-        $popup.off("click.detail-close").on("click.detail-close", function (e) {
-          if ($(e.target).is(".form-popup-wrapper.task-detail-popup")) {
-            $popup.fadeToggle();
-          }
+// Initialize task popup handler
+PopupHandler.registerHandler('task', {
+    templateName: 'task-detail',
+    deleteConfirmMessage: ts_translate('Delete this task?'),
+    deletedMessage: ts_translate('Task deleted'),
+    savedMessage: ts_translate('Task saved'),
+    fetchData: function(taskId, callback) {
+        $.when(
+            $.getJSON(ts_url(`/api/tasks/get.php?id=${encodeURIComponent(taskId)}`)),
+            $.getJSON(ts_url('/api/tasks/statuses.php')),
+            $.getJSON(ts_url('/api/tasks/priorities.php')),
+            $.getJSON(ts_url('/api/users/list.php'))
+        ).done(function(taskRes, statusRes, priorityRes, userRes) {
+            const [taskResponse, statusResponse, priorityResponse, userResponse] =
+                [taskRes[0], statusRes[0], priorityRes[0], userRes[0]];
+            if (!taskResponse.success || !taskResponse.task ||
+                !statusResponse.success || !Array.isArray(statusResponse.statuses) ||
+                !priorityResponse.success || !Array.isArray(priorityResponse.priorities) ||
+                !userResponse.success || !Array.isArray(userResponse.users)) {
+                callback(ts_translate('Failed to load task'));
+                return;
+            }
+            const task = taskResponse.task;
+            task.statuses = Object.fromEntries(statusResponse.statuses.map(status => [status.id, status]));
+            task.priorities = Object.fromEntries(priorityResponse.priorities.map(priority => [priority.slug, priority.color]));
+            task.users = Object.fromEntries(userResponse.users.map(user => [user.id, user.name]));
+            callback(null, task);
+        }).fail(function() {
+            callback(ts_translate('Failed to load task'));
         });
-      });
+    },
+    onDelete: function(taskId, callback) {
+        TaskManager.delete(taskId, callback);
+    },
+    onDeleteSuccess: function() {
+        if (window.currentView && window.loadTasks) {
+            window.loadTasks(window.currentView);
+        }
+        // Reload dashboard if on dashboard page
+        if (window.reloadDashboardData) {
+            window.reloadDashboardData();
+        }
+    },
+    onSave: function(formData, callback) {
+        $.ajax({
+            url: ts_url('/api/tasks/update.php'),
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    callback(null);
+                    if (window.currentView && window.loadTasks) {
+                        window.loadTasks(window.currentView);
+                    }
+                    // Reload dashboard if on dashboard page
+                    if (window.reloadDashboardData) {
+                        window.reloadDashboardData();
+                    }
+                } else {
+                    callback(response.message || ts_translate('Failed to save'));
+                }
+            },
+            error: function() {
+                callback(ts_translate('Error saving task'));
+            }
+        });
+    },
+    collectFormData: function($popup, taskId) {
+        const formData = new FormData();
+        formData.append('id', taskId);
+        formData.append('title', $popup.find('h2').text() || '');
+        formData.append('description', $popup.find('textarea[name="description"]').val());
+        formData.append('status_id', $popup.find('#status').val());
+        formData.append('priority', $popup.find('#priority').val());
+        formData.append('start_date', $popup.find('#start_date').val());
+        formData.append('due_date', $popup.find('#deadline').val());
+        formData.append('estimated_minutes', $popup.find('#estimated_minutes').val());
+        formData.append('assigned_to', $popup.find('#assigned_to').val());
+        return formData;
     }
-  });
+});
+
+function openTaskDetail(taskId) {
+    PopupHandler.open('task', taskId);
 }
 
 function attachTaskDetailHandlers() {

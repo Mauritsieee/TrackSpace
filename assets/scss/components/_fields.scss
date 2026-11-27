@@ -113,7 +113,7 @@ progress {
   height: 0.6rem;
     position: relative;
   &::after {
-    content: '100%';
+    content: attr(value) "%";
     position: absolute;
     top: 50%;
     transform: translateY(-50%);

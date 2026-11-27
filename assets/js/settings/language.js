@@ -20,7 +20,7 @@ jQuery(function($) {
                 }
             },
             error: function() {
-                alert('Error saving language');
+                alert(ts_translate('Error saving language'));
             },
             complete: function() {
                 $submit.prop('disabled', false);

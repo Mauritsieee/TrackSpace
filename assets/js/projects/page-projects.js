@@ -22,7 +22,7 @@ jQuery(document).ready(function($) {
             }
             
             if (projects.length === 0) {
-                $('#projectsList').html('<p style="color: #999;">No projects yet</p>');
+                $('#projectsList').empty().append($('<p style="color: #999;"></p>').text(ts_translate('No projects yet')));
                 return;
             }
             
@@ -46,13 +46,13 @@ jQuery(document).ready(function($) {
                     $list.find('.delete-project').last().on('click', function(e) {
                         e.preventDefault();
                         const id = $(this).data('id');
-                        ts_confirm('Are you sure you want to delete this project?', 'Delete', 'Cancel').then(function(confirmed) {
+                        ts_confirm(ts_translate('Are you sure you want to delete this project?'), ts_translate('Delete'), ts_translate('Cancel')).then(function(confirmed) {
                             if (confirmed) {
                                 ProjectManager.delete(id, function(err) {
                                     if (err) {
                                         ts_alert(err, 'danger');
                                     } else {
-                                        ts_alert('Project deleted', 'success');
+                                        ts_alert(ts_translate('Project deleted'), 'success');
                                         loadProjects();
                                     }
                                 });
@@ -78,7 +78,7 @@ jQuery(document).ready(function($) {
             if (err) {
                 ts_alert(err, 'danger');
             } else {
-                ts_alert('Project created', 'success');
+                ts_alert(ts_translate('Project created'), 'success');
                 $form[0].reset();
                 loadProjects();
             }

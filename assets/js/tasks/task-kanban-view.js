@@ -19,7 +19,7 @@ function renderTaskKanbanView(tasks, statuses) {
                 <span class="kanban-status-count">${count}</span>
             </div>
             <div class="kanban-column-body" data-status="${statusId}"></div>
-            <button class="kanban-add-task-btn" data-status="${statusId}">+ Add task</button>
+            <button class="kanban-add-task-btn" data-status="${statusId}">+ ${ts_translate('Add task')}</button>
         </div>`);
 
         const $body = $column.find('.kanban-column-body');
@@ -48,10 +48,10 @@ function attachKanbanAddTaskHandlers() {
         
         const $form = $(`
             <div class="kanban-add-task-form">
-                <input type="text" placeholder="Task title..." class="kanban-task-input" data-status="${statusId}">
+                <input type="text" placeholder="${ts_translate('Task title...')}" class="kanban-task-input" data-status="${statusId}">
                 <div class="kanban-form-actions">
-                    <button class="kanban-form-submit">Add</button>
-                    <button class="kanban-form-cancel">Cancel</button>
+                    <button class="kanban-form-submit">${ts_translate('Add')}</button>
+                    <button class="kanban-form-cancel">${ts_translate('Cancel')}</button>
                 </div>
             </div>
         `);
@@ -93,7 +93,7 @@ function initKanbanDragDrop() {
             ghostClass: 'sortable-ghost',
             onEnd: function(evt) {
                 const taskRow = evt.item;
-                const taskId = taskRow.querySelector('.delete-task').dataset.id;
+                const taskId = taskRow.dataset.taskId;
                 const newStatusId = evt.to.dataset.status;
                 
                 TaskManager.update(taskId, { status_id: newStatusId }, function(err) {
@@ -112,13 +112,13 @@ function attachTaskHandlers() {
         e.preventDefault();
         e.stopPropagation();
         const id = $(this).data('id');
-        ts_confirm('Delete this task?', 'Delete', 'Cancel').then(function(confirmed) {
+        ts_confirm(ts_translate('Delete this task?'), ts_translate('Delete'), ts_translate('Cancel')).then(function(confirmed) {
             if (confirmed) {
                 TaskManager.delete(id, function(err) {
                     if (err) {
                         ts_alert(err, 'danger');
                     } else {
-                        ts_alert('Task deleted', 'success');
+                        ts_alert(ts_translate('Task deleted'), 'success');
                         loadTasks();
                     }
                 });

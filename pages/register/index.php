@@ -13,7 +13,7 @@
 
             <div class="form-group">
                 <label for="name"><?= __('Full name') ?></label>
-                <input type="text" id="name" name="name" placeholder="John Doe" autocomplete="name" required>
+                <input type="text" id="name" name="name" placeholder="<?= htmlspecialchars(__('John Doe'), ENT_QUOTES, 'UTF-8') ?>" autocomplete="name" required>
             </div>
 
             <div class="form-group">

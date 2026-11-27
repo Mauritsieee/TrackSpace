@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="<?= htmlspecialchars($lang, ENT_QUOTES, 'UTF-8') ?>">
 <head>
     <meta charset="UTF-8">
     <title>TrackSpace</title>
@@ -11,8 +11,15 @@
     <!-- SortableJS -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 
+    <!-- ChartJS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+
     <script>
         const TS_BASE_PATH = <?= json_encode(rtrim(TS_BASE_PATH, '/')) ?>;
+        const TS_TRANSLATIONS = <?= json_encode($translations, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+        function ts_translate(key) {
+            return Object.prototype.hasOwnProperty.call(TS_TRANSLATIONS, key) ? TS_TRANSLATIONS[key] : key;
+        }
     </script>
 </head>
 

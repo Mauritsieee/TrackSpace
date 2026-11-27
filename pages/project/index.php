@@ -21,40 +21,40 @@ include_once __DIR__ . '/handler.php';
     <div class="tab-menu">
         <div class="tab-menu-headers">
             <button class="tab-menu-button" data-tabmenu="Tasks">
-                Tasks
+                <?= __('Tasks') ?>
             </button>
             <button class="tab-menu-button" data-tabmenu="Overview">
-                Overview
+                <?= __('Overview') ?>
             </button>
             <button class="tab-menu-button" data-tabmenu="Files">
-                Files
+                <?= __('Files') ?>
             </button>
             <button class="tab-menu-button" data-tabmenu="Settings">
-                Settings
+                <?= __('Settings') ?>
             </button>
         </div>
         <div class="tab-menu-body">
             <section class="tab-menu-panel" data-tabmenu="Tasks">
                 <div class="tasks-panel">
                     <div class="tasks-panel-header">
-                        <h2>Tasks</h2>
+                        <h2><?= __('Tasks') ?></h2>
                         <div class="tasks-view-toggle btns-connected-wrapper">
-                            <button<?= (($_COOKIE['taskView-' . $project_id] ?? 'list') === 'kanban') ? ' class="current"' : '' ?>>Kanban</button>
-                            <button<?= (($_COOKIE['taskView-' . $project_id] ?? 'list') === 'list') ? ' class="current"' : '' ?>>Lijst</button>
-                            <button<?= (($_COOKIE['taskView-' . $project_id] ?? 'list') === 'tabel') ? ' class="current"' : '' ?>>Tabel</button>
+                            <button data-view="kanban"<?= (($_COOKIE['taskView-' . $project_id] ?? 'list') === 'kanban') ? ' class="current"' : '' ?>><?= __('Kanban') ?></button>
+                            <button data-view="list"<?= (($_COOKIE['taskView-' . $project_id] ?? 'list') === 'list') ? ' class="current"' : '' ?>><?= __('List') ?></button>
+                            <button data-view="tabel"<?= (($_COOKIE['taskView-' . $project_id] ?? 'list') === 'tabel') ? ' class="current"' : '' ?>><?= __('Table') ?></button>
                         </div>
                     </div>
                 </div>
                 <div id="tasksList"></div>
             </section>
             <section class="tab-menu-panel" data-tabmenu="Overview">
-                <h2>Overview</h2>
+                <h2><?= __('Overview') ?></h2>
             </section>
             <section class="tab-menu-panel" data-tabmenu="Files">
-                <h2>Files</h2>
+                <h2><?= __('Files') ?></h2>
             </section>
             <section class="tab-menu-panel" data-tabmenu="Settings">
-                <h2>Settings</h2>
+                <h2><?= __('Settings') ?></h2>
             </section>
         </div>
     </div>

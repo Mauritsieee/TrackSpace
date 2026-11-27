@@ -16,6 +16,6 @@ $priorityColor = $task['priority_color'];
     </div>
     
     <span class="priority-badge" style="background-color: <?= $priorityColor ?>;">
-        <?= ucfirst(htmlspecialchars($task['priority'] ?? 'normal')) ?>
+        <?= htmlspecialchars(__(ucfirst($task['priority'] ?? 'normal'))) ?>
     </span>
 </div>

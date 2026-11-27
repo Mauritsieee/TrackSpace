@@ -20,7 +20,7 @@ jQuery(function($) {
                 }
             },
             error: function(xhr) {
-                ts_alert('Er ging iets mis!');
+                ts_alert(ts_translate('Something went wrong.'), 'danger');
             },
             complete: function() {
                 $button.prop('disabled', false);
@@ -43,7 +43,7 @@ jQuery(function($) {
                 }
             },
             error: function(xhr) {
-                ts_alert(xhr.responseJSON?.message || 'Logout failed.', 'danger');
+                ts_alert(xhr.responseJSON?.message || ts_translate('Logout failed.'), 'danger');
             }
         });
     });
@@ -71,7 +71,7 @@ jQuery(function($) {
                 }
             },
             error: function(xhr) {
-                ts_alert(xhr.responseJSON?.message || 'Er ging iets mis!', 'danger');
+                ts_alert(xhr.responseJSON?.message || ts_translate('Something went wrong.'), 'danger');
             },
             complete: function() {
                 $button.prop('disabled', false);
@@ -98,11 +98,11 @@ jQuery(function($) {
                         $calendar.html(response.html);
                         attachButtonHandlers();
                     } else {
-                        $calendar.html('<p>Error loading calendar</p>');
+                        $calendar.empty().append($('<p></p>').text(ts_translate('Error loading calendar')));
                     }
                 },
                 error: function() {
-                    $calendar.html('<p>Error loading calendar</p>');
+                    $calendar.empty().append($('<p></p>').text(ts_translate('Error loading calendar')));
                 }
             });
         }
@@ -149,7 +149,7 @@ function ts_alert(message, type = "success", duration = 2000) {
   return $alert;
 }
 
-function ts_confirm(message, yesText = 'Yes', noText = 'No') {
+function ts_confirm(message, yesText = ts_translate('Yes'), noText = ts_translate('No')) {
     return new Promise(function(resolve) {
         const $confirm = $('<div class="ts-confirm"></div>')
             .html(`
@@ -216,8 +216,610 @@ jQuery(document).ready(function($) {
     $('.tab-menu-button').first().trigger('click');
     
 });
+jQuery(function($) {
+    
+    // Load statuses, priorities, and users for popup
+    function loadPopupData() {
+        return $.when(
+            $.ajax({
+                url: ts_url('/api/tasks/statuses.php'),
+                type: 'GET',
+                dataType: 'json'
+            }),
+            $.ajax({
+                url: ts_url('/api/tasks/priorities.php'),
+                type: 'GET',
+                dataType: 'json'
+            }),
+            $.ajax({
+                url: ts_url('/api/users/list.php'),
+                type: 'GET',
+                dataType: 'json'
+            })
+        ).done(function(statusRes, priorityRes, userRes) {
+            // Set window variables for popup handler
+            if (statusRes[0].success) {
+                window.statuses = {};
+                statusRes[0].statuses.forEach(status => {
+                    window.statuses[status.id] = status;
+                });
+            }
+            
+            if (priorityRes[0].success) {
+                window.priorities = {};
+                priorityRes[0].priorities.forEach(priority => {
+                    window.priorities[priority.slug] = priority.color;
+                });
+            }
+            
+            if (userRes[0].success) {
+                window.users = {};
+                userRes[0].users.forEach(user => {
+                    window.users[user.id] = user.name;
+                });
+            }
+        });
+    }
+    
+    // Load dashboard statistics
+    function loadDashboardStats() {
+        $.ajax({
+            url: ts_url('/api/dashboard/stats.php'),
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    // Update open tasks count
+                    $('.link-card:has(.icon-wrapper[style*="primary-5"]) .value').text(response.open_tasks);
+                    
+                    // Update active projects count
+                    $('.link-card:has(.icon-wrapper[style*="primary-6"]) .value').text(response.active_projects);
+                    
+                    // Update scheduled time (convert minutes to hours and minutes)
+                    const totalMinutes = response.scheduled_minutes || 0;
+                    const hours = Math.floor(totalMinutes / 60);
+                    const minutes = totalMinutes % 60;
+                    let timeText = '';
+                    if (hours > 0) {
+                        timeText = hours + 'h';
+                        if (minutes > 0) timeText += ' ' + minutes + 'm';
+                    } else {
+                        timeText = minutes + 'm';
+                    }
+                    $('.link-card:has(.icon-wrapper[style*="warning"]) .value').text(timeText);
+                }
+            },
+            error: function() {
+                console.error('Error loading dashboard stats');
+            }
+        });
+    }
+    
+    // Reload all dashboard data (used after task updates)
+    function reloadDashboardData() {
+        loadDashboardStats();
+        loadPriorityTasks();
+        loadNewestTasks();
+        loadActiveProjects();
+        if (window.reloadTaskStatusChart) {
+            window.reloadTaskStatusChart();
+        }
+        if (window.reloadTaskActivityChart) {
+            window.reloadTaskActivityChart();
+        }
+    }
+    
+    // Expose reload function globally for popup handler
+    window.reloadDashboardData = reloadDashboardData;
+    
+    // Load priority tasks
+    function loadPriorityTasks() {
+        const priorityFilters = {
+            sortBy: 'priority',
+            sortOrder: ['high', 'normal', 'low'],
+            limit: 6,
+            page: 1,
+            statuses: [1, 2, 3, 5]
+        };
+        
+        TaskManager.listAll(priorityFilters, function(err, tasks) {
+            const $tbody = $('#dashboard-priority-tasks');
+            
+            if (err) {
+                return $tbody.html(`<tr><td colspan="3" style="text-align: center; color: #999;">${err}</td></tr>`);
+            }
+            
+            if (!tasks || tasks.length === 0) {
+                return $tbody.empty().append($('<tr><td colspan="3" style="text-align: center; color: #999;"></td></tr>').find('td').text(ts_translate('No tasks yet')).end());
+            }
+            
+            $tbody.html('');
+            tasks.forEach(function(task) {
+                ts_template('dashboard-priority-task', task, function(html) {
+                    $tbody.append(html);
+                });
+            });
+            
+            // Attach click handlers for task popups
+            PopupHandler.attachClickHandler('task', '.dashboard-task-row', function($element) {
+                return $element.data('task-id');
+            });
+        });
+    }
+    
+    // Load newest tasks
+    function loadNewestTasks() {
+        const newestFilters = {
+            orderBy: 'created_at:desc',
+            limit: 6,
+            page: 1,
+            statuses: [1, 2, 3, 5]
+        };
+        
+        TaskManager.listAll(newestFilters, function(err, tasks) {
+            const $tbody = $('#dashboard-newest-tasks');
+            
+            if (err) {
+                return $tbody.html(`<tr><td colspan="3" style="text-align: center; color: #999;">${err}</td></tr>`);
+            }
+            
+            if (!tasks || tasks.length === 0) {
+                return $tbody.empty().append($('<tr><td colspan="3" style="text-align: center; color: #999;"></td></tr>').find('td').text(ts_translate('No tasks yet')).end());
+            }
+            
+            $tbody.html('');
+            tasks.forEach(function(task) {
+                ts_template('dashboard-newest-task', task, function(html) {
+                    $tbody.append(html);
+                });
+            });
+            
+            // Attach click handlers for task popups
+            PopupHandler.attachClickHandler('task', '.dashboard-task-row', function($element) {
+                return $element.data('task-id');
+            });
+        });
+    }
+    
+    // Load active projects
+    function loadActiveProjects() {
+        $.ajax({
+            url: ts_url('/api/projects/active.php'),
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    const $wrapper = $('.projects-wrapper');
+                    $wrapper.html('');
+                    
+                    if (response.projects.length === 0) {
+                        $wrapper.append($('<p style="color: #999; padding: 1rem;"></p>').text(ts_translate('No active projects')));
+                        return;
+                    }
+                    
+                    response.projects.forEach(function(project) {
+                        const $project = $(`
+                            <a href="${ts_url(`/project?id=${project.id}`)}" class="project">
+                                <p class="name">${escapeHtml(project.name)}</p>
+                                <div>
+                                    <progress min="0" max="100" value="${project.progress}" style="flex: 1;"></progress>
+                                    
+                                </div>
+                            </a>
+                        `);
+                        $wrapper.append($project);
+                    });
+                } else {
+                    console.error('Failed to load projects:', response.message);
+                }
+            },
+            error: function() {
+                console.error('Error loading active projects');
+            }
+        });
+    }
+    
+    // Load priority tasks (sorted by priority: high > medium > low)
+    if ($('#dashboard-priority-tasks').length > 0 || $('#dashboard-newest-tasks').length > 0) {
+        loadPopupData().done(function() {
+            loadPriorityTasks();
+            loadNewestTasks();
+            
+            // Attach click handlers for task popups
+            PopupHandler.attachClickHandler('task', '.dashboard-task-row', function($element) {
+                return $element.data('task-id');
+            });
+        });
+    }
+    
+    // Load dashboard statistics
+    loadDashboardStats();
+    
+    // Load active projects
+    if ($('.projects-wrapper').length > 0) {
+        loadActiveProjects();
+    }
+});
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+
+
+
+
+
+jQuery(function($) {
+    const $container = $('#dashboard-activity-chart');
+    if (!$container.length) return;
+
+    const $message = $container.find('.dashboard-activity-message');
+    const $graph = $container.find('.dashboard-activity-graph');
+    const $canvas = $container.find('#dashboard-activity-canvas');
+    let chart;
+    let request;
+
+    function loadTaskActivityChart() {
+        if (request) request.abort();
+        request = $.ajax({
+            url: ts_url('/api/dashboard/task-activity.php'),
+            type: 'GET',
+            dataType: 'json'
+        }).done(function(response) {
+            if (!response.success || !Array.isArray(response.weeks) || typeof Chart === 'undefined') {
+                $graph.prop('hidden', true);
+                $message.text($container.data('error')).show();
+                return;
+            }
+
+            const weeks = response.weeks;
+            const createdLabel = $container.data('created');
+            const completedLabel = $container.data('completed');
+            const labels = weeks.map(week => week.week_start.slice(8, 10) + '-' + week.week_start.slice(5, 7));
+            $canvas.attr('aria-label', weeks.map((week, index) =>
+                labels[index] + ': ' + createdLabel + ' ' + week.created + ', ' + completedLabel + ' ' + week.completed
+            ).join('; '));
+
+            if (chart) chart.destroy();
+            $message.hide();
+            $graph.prop('hidden', false);
+            chart = new Chart(document.getElementById('dashboard-activity-canvas'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: createdLabel,
+                            data: weeks.map(week => week.created),
+                            borderColor: '#7042D9',
+                            backgroundColor: '#7042D9',
+                            tension: 0.25
+                        },
+                        {
+                            label: completedLabel,
+                            data: weeks.map(week => week.completed),
+                            borderColor: '#1CBD15',
+                            backgroundColor: '#1CBD15',
+                            tension: 0.25
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { precision: 0 } }
+                    }
+                }
+            });
+        }).fail(function(xhr, status) {
+            if (status !== 'abort') {
+                $graph.prop('hidden', true);
+                $message.text($container.data('error')).show();
+            }
+        }).always(function() {
+            request = null;
+        });
+    }
+
+    window.reloadTaskActivityChart = loadTaskActivityChart;
+    loadTaskActivityChart();
+});
+
+jQuery(function($) {
+    const $container = $('#dashboard-status-chart');
+    if (!$container.length) return;
+
+    const $message = $container.find('.dashboard-status-message');
+    const $donut = $container.find('.dashboard-status-donut');
+    const $canvas = $container.find('#dashboard-status-canvas');
+    let chart;
+    let request;
+
+    function taskUrl(statusId) {
+        return ts_url('/tasks') + '?status=' + encodeURIComponent(statusId);
+    }
+
+    function loadTaskStatusChart() {
+        if (request) request.abort();
+        $message.text($container.data('loading')).show();
+
+        request = $.ajax({
+            url: ts_url('/api/dashboard/task-statuses.php'),
+            type: 'GET',
+            dataType: 'json'
+        }).done(function(response) {
+            if (!response.success || !Array.isArray(response.statuses)) {
+                $donut.prop('hidden', true);
+                $message.text($container.data('error')).show();
+                return;
+            }
+
+            const statuses = response.statuses;
+            const total = statuses.reduce((sum, status) => sum + Number(status.task_count), 0);
+            $canvas.attr('aria-label', statuses.map(status => status.name + ': ' + status.task_count).join(', '));
+
+            if (chart) {
+                chart.destroy();
+                chart = null;
+            }
+
+            if (total === 0) {
+                $donut.prop('hidden', true);
+                $message.text($container.data('empty')).show();
+                return;
+            }
+
+            if (typeof Chart === 'undefined') {
+                $donut.prop('hidden', true);
+                $message.text($container.data('error')).show();
+                return;
+            }
+
+            $container.find('.dashboard-status-total strong').text(total);
+            $message.hide();
+            $donut.prop('hidden', false);
+            chart = new Chart(document.getElementById('dashboard-status-canvas'), {
+                type: 'doughnut',
+                data: {
+                    labels: statuses.map(status => status.name),
+                    datasets: [{
+                        data: statuses.map(status => Number(status.task_count)),
+                        backgroundColor: statuses.map(status => status.color),
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '72%',
+                    plugins: { legend: { display: false } },
+                    onClick: function(event, elements) {
+                        if (elements.length) {
+                            window.location.href = taskUrl(statuses[elements[0].index].id);
+                        }
+                    }
+                }
+            });
+        }).fail(function(xhr, status) {
+            if (status !== 'abort') {
+                $donut.prop('hidden', true);
+                $message.text($container.data('error')).show();
+            }
+        }).always(function() {
+            request = null;
+        });
+    }
+
+    window.reloadTaskStatusChart = loadTaskStatusChart;
+    loadTaskStatusChart();
+});
+
+/**
+ * Generic Popup Handler
+ * Reusable popup system for all pages
+ * 
+ * Usage:
+ * PopupHandler.open(type, id, options)
+ * PopupHandler.close()
+ * PopupHandler.registerHandler(type, config)
+ */
+
+const PopupHandler = (function() {
+    let currentPopup = null;
+    let handlers = {};
+    
+    const defaultConfig = {
+        popupClass: 'form-popup-wrapper',
+        wrapperSelector: '.form-popup-wrapper',
+        closeSelector: '.popup-close, .task-detail-close',
+        deleteSelector: '.delete-btn, .task-delete-btn',
+        saveSelector: '.btn-primary',
+        backgroundClose: true
+    };
+
+    /**
+     * Register a handler for a specific entity type
+     * @param {string} type - Entity type (e.g., 'task', 'project')
+     * @param {object} config - Handler configuration
+     */
+    function registerHandler(type, config) {
+        handlers[type] = {
+            ...defaultConfig,
+            ...config
+        };
+    }
+
+    /**
+     * Open a popup for an entity
+     * @param {string} type - Entity type
+     * @param {number|string} id - Entity ID
+     * @param {object} options - Additional options
+     */
+    function open(type, id, options = {}) {
+        const config = handlers[type];
+        if (!config) {
+            console.error(`No handler registered for type: ${type}`);
+            return;
+        }
+
+        // Get entity data
+        config.fetchData(id, function(err, data) {
+            if (err) {
+                ts_alert(err, 'danger');
+                return;
+            }
+
+            // Prepare template data
+            const templateData = { ...data, ...options };
+            
+            // Render template
+            ts_template(config.templateName, templateData, function(html) {
+                // Create or reuse popup wrapper
+                let $popup = $(`.${config.popupClass}.${type}-popup`);
+                if ($popup.length === 0) {
+                    $popup = $(`<div class="${config.popupClass} ${type}-popup" style="display:none;"></div>`);
+                    $('body').append($popup);
+                }
+
+                currentPopup = { type, id, $popup, config };
+                $popup.html(html);
+                $popup.fadeToggle();
+
+                // Setup close button
+                $popup.find(config.closeSelector)
+                    .off('click')
+                    .on('click', function() {
+                        close();
+                    });
+
+                // Setup delete button
+                if (config.onDelete) {
+                    $popup.find(config.deleteSelector)
+                        .off('click')
+                        .on('click', function(e) {
+                            e.preventDefault();
+                            handleDelete(type, id, config);
+                        });
+                }
+
+                // Setup save button
+                if (config.onSave) {
+                    $popup.find(config.saveSelector)
+                        .off('click')
+                        .on('click', function(e) {
+                            e.preventDefault();
+                            handleSave(type, id, config, $popup);
+                        });
+                }
+
+                // Setup background close
+                if (config.backgroundClose) {
+                    $popup.off('click.popup-close').on('click.popup-close', function(e) {
+                        if ($(e.target).is(`.${config.popupClass}`)) {
+                            close();
+                        }
+                    });
+                }
+            });
+        });
+    }
+
+    /**
+     * Close current popup
+     */
+    function close() {
+        if (currentPopup) {
+            currentPopup.$popup.fadeToggle();
+            currentPopup = null;
+        }
+    }
+
+    /**
+     * Handle delete action
+     */
+    function handleDelete(type, id, config) {
+        const confirmMessage = config.deleteConfirmMessage || ts_translate('Delete this item?');
+        const confirmButton = config.deleteConfirmButton || ts_translate('Delete');
+        const cancelButton = config.deleteCancelButton || ts_translate('Cancel');
+
+        ts_confirm(confirmMessage, confirmButton, cancelButton).then(function(confirmed) {
+            if (confirmed) {
+                config.onDelete(id, function(err) {
+                    if (err) {
+                        ts_alert(err, 'danger');
+                    } else {
+                        ts_alert(config.deletedMessage || ts_translate('Item deleted'), 'success');
+                        close();
+                        if (config.onDeleteSuccess) {
+                            config.onDeleteSuccess();
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     * Handle save action
+     */
+    function handleSave(type, id, config, $popup) {
+        const formData = config.collectFormData($popup, id);
+        
+        config.onSave(formData, function(err) {
+            if (err) {
+                ts_alert(err, 'danger');
+            } else {
+                ts_alert(config.savedMessage || ts_translate('Item saved'), 'success');
+                close();
+                if (config.onSaveSuccess) {
+                    config.onSaveSuccess();
+                }
+            }
+        });
+    }
+
+    /**
+     * Attach click handlers to elements to open popup
+     * @param {string} type - Entity type
+     * @param {string} selector - CSS selector for clickable elements
+     * @param {function} getIdFromElement - Function to extract ID from element
+     */
+    function attachClickHandler(type, selector, getIdFromElement) {
+        $(document)
+            .off(`click.popup-${type}`)
+            .on(`click.popup-${type}`, selector, function(e) {
+                // Check if clicking on excluded elements
+                if ($(e.target).closest('.delete-btn, .task-delete-btn, input, button, [data-no-popup]').length) {
+                    return;
+                }
+
+                const id = getIdFromElement($(this));
+                if (id) {
+                    open(type, id);
+                }
+            });
+    }
+
+    return {
+        open,
+        close,
+        registerHandler,
+        attachClickHandler,
+        getCurrent: () => currentPopup
+    };
+})();
+
 function ts_template(templateName, data, callback) {
-    console.log(templateName, data);
     $.ajax({
         url: ts_url('/api/templates/render.php'),
         type: 'POST',
@@ -256,7 +858,7 @@ jQuery(function($) {
                     }
                 },
                 error: function() {
-                    callback('Error loading projects');
+                    callback(ts_translate('Error loading projects'));
                 }
             });
         },
@@ -275,7 +877,7 @@ jQuery(function($) {
                     }
                 },
                 error: function() {
-                    callback('Error creating project');
+                    callback(ts_translate('Error creating project'));
                 }
             });
         },
@@ -294,7 +896,7 @@ jQuery(function($) {
                     }
                 },
                 error: function() {
-                    callback('Error deleting project');
+                    callback(ts_translate('Error deleting project'));
                 }
             });
         }
@@ -325,7 +927,7 @@ jQuery(document).ready(function($) {
             }
             
             if (projects.length === 0) {
-                $('#projectsList').html('<p style="color: #999;">No projects yet</p>');
+                $('#projectsList').empty().append($('<p style="color: #999;"></p>').text(ts_translate('No projects yet')));
                 return;
             }
             
@@ -349,13 +951,13 @@ jQuery(document).ready(function($) {
                     $list.find('.delete-project').last().on('click', function(e) {
                         e.preventDefault();
                         const id = $(this).data('id');
-                        ts_confirm('Are you sure you want to delete this project?', 'Delete', 'Cancel').then(function(confirmed) {
+                        ts_confirm(ts_translate('Are you sure you want to delete this project?'), ts_translate('Delete'), ts_translate('Cancel')).then(function(confirmed) {
                             if (confirmed) {
                                 ProjectManager.delete(id, function(err) {
                                     if (err) {
                                         ts_alert(err, 'danger');
                                     } else {
-                                        ts_alert('Project deleted', 'success');
+                                        ts_alert(ts_translate('Project deleted'), 'success');
                                         loadProjects();
                                     }
                                 });
@@ -381,7 +983,7 @@ jQuery(document).ready(function($) {
             if (err) {
                 ts_alert(err, 'danger');
             } else {
-                ts_alert('Project created', 'success');
+                ts_alert(ts_translate('Project created'), 'success');
                 $form[0].reset();
                 loadProjects();
             }
@@ -417,7 +1019,7 @@ jQuery(function($) {
                 }
             },
             error: function() {
-                alert('Error saving language');
+                alert(ts_translate('Error saving language'));
             },
             complete: function() {
                 $submit.prop('disabled', false);
@@ -431,7 +1033,7 @@ jQuery(function($) {
         document.cookie = `sidebar-open=${!$('body').hasClass('collapse-sidebar')}; path=/; max-age=31536000`;
     });
 });
-jQuery(function($) {
+
     window.TaskManager = {
         statuses: function(callback) {
             $.ajax({
@@ -446,7 +1048,7 @@ jQuery(function($) {
                     }
                 },
                 error: function() {
-                    callback('Error loading statuses');
+                    callback(ts_translate('Error loading statuses'));
                 }
             });
         },
@@ -465,7 +1067,34 @@ jQuery(function($) {
                     }
                 },
                 error: function() {
-                    callback('Error loading tasks');
+                    callback(ts_translate('Error loading tasks'));
+                }
+            });
+        },
+
+        listAll: function(filters, callback) {
+            // Backward compatibility: if filters is a function, it's the callback
+            if (typeof filters === 'function') {
+                callback = filters;
+                filters = {};
+            }
+            
+            const queryParams = $.extend({ all: 1 }, filters);
+            
+            $.ajax({
+                url: ts_url('/api/tasks/list.php'),
+                type: 'GET',
+                data: $.param(queryParams), // Without true, arrays become statuses[]=1&statuses[]=2 etc
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        callback(null, response.tasks);
+                    } else {
+                        callback(response.message);
+                    }
+                },
+                error: function() {
+                    callback(ts_translate('Error loading tasks'));
                 }
             });
         },
@@ -484,7 +1113,7 @@ jQuery(function($) {
                     }
                 },
                 error: function() {
-                    callback('Error creating task');
+                    callback(ts_translate('Error creating task'));
                 }
             });
         },
@@ -503,7 +1132,7 @@ jQuery(function($) {
                     }
                 },
                 error: function() {
-                    callback('Error updating task');
+                    callback(ts_translate('Error updating task'));
                 }
             });
         },
@@ -522,12 +1151,12 @@ jQuery(function($) {
                     }
                 },
                 error: function() {
-                    callback('Error deleting task');
+                    callback(ts_translate('Error deleting task'));
                 }
             });
         }
     };
-});
+
 
 
 jQuery(function($) {
@@ -601,8 +1230,8 @@ jQuery(function($) {
                 return;
             }
 
-            if (tasks.length === 0) {
-                $('#tasksList').html('<p style="color: #999; padding: 1rem;">No tasks yet</p>');
+            if (tasks.length === 0 && view !== 'list') {
+                $('#tasksList').empty().append($('<p style="color: #999; padding: 1rem;"></p>').text(ts_translate('No tasks yet')));
                 return;
             }
 
@@ -617,7 +1246,7 @@ jQuery(function($) {
     }
 
     $('.tasks-view-toggle button').on('click', function() {
-        const view = $(this).text().toLowerCase();
+        const view = $(this).data('view');
         
         // Update the 'current' class
         $('.tasks-view-toggle button').removeClass('current');
@@ -640,7 +1269,7 @@ jQuery(function($) {
             if (err) {
                 ts_alert(err, 'danger');
             } else {
-                ts_alert('Task created', 'success');
+                ts_alert(ts_translate('Task created'), 'success');
                 $form[0].reset();
                 loadTasks(currentView);
             }
@@ -684,7 +1313,7 @@ function createTaskQuick(title, statusId, callback) {
                     ts_template('task-kanban-card', newTask, function(html) {
                         $column.append(html);
                         attachTaskHandlers();
-                        ts_alert('Task created', 'success');
+                        ts_alert(ts_translate('Task created'), 'success');
                         if (callback) callback();
                     });
                 } else if (window.currentView === 'tabel') {
@@ -694,10 +1323,10 @@ function createTaskQuick(title, statusId, callback) {
                         $tbody.append(html);
                         attachTaskHandlers();
                         attachTaskDetailHandlers();
-                        ts_alert('Task created', 'success');
+                        ts_alert(ts_translate('Task created'), 'success');
                         if (callback) callback();
                     });
-                    ts_alert('Task created', 'success');
+                    ts_alert(ts_translate('Task created'), 'success');
                     if (callback) callback();
                 } else {
                     // List view - voeg kaart toe aan de sectie
@@ -712,16 +1341,16 @@ function createTaskQuick(title, statusId, callback) {
                         $count.text(parseInt($count.text()) + 1);
                         
                         attachTaskHandlers();
-                        ts_alert('Task created', 'success');
+                        ts_alert(ts_translate('Task created'), 'success');
                         if (callback) callback();
                     });
                 }
             } else {
-                ts_alert(response.message || 'Failed to create task', 'danger');
+                ts_alert(response.message || ts_translate('Failed to create task'), 'danger');
             }
         },
         error: function(xhr) {
-            ts_alert('Error creating task', 'danger');
+            ts_alert(ts_translate('Error creating task'), 'danger');
         }
     });
 }
@@ -735,68 +1364,108 @@ jQuery(function($) {
                 dataType: 'json'
             }),
             $.ajax({
-                url: ts_url('/api/tasks/priorities.php'),
-                type: 'GET',
-                dataType: 'json'
-            }),
-            $.ajax({
                 url: ts_url('/api/users/list.php'),
                 type: 'GET',
                 dataType: 'json'
             })
-        ).done(function(statusRes, priorityRes, userRes) {
-            window.statuses = {};
+        ).done(function(statusRes, userRes) {
+            // Populate status filter
             if (statusRes[0].success) {
+                const $statusFilter = $('#statusFilter');
+                $statusFilter.html('');
                 statusRes[0].statuses.forEach(function(status) {
-                    window.statuses[status.id] = status;
+                    $statusFilter.append(`
+                        <label><input type="checkbox" name="status" value="${status.id}"> ${escapeHtml(status.name)}</label>
+                    `);
                 });
             }
-            
-            window.priorities = {};
-            if (priorityRes[0].success) {
-                priorityRes[0].priorities.forEach(function(priority) {
-                    window.priorities[priority.slug] = priority.color;
-                });
-            }
-            
-            window.users = {};
+
+            // Populate assigned to filter
             if (userRes[0].success) {
+                const $assignedFilter = $('#assignedToFilter');
+                $assignedFilter.html('');
                 userRes[0].users.forEach(function(user) {
-                    window.users[user.id] = user.name;
+                    $assignedFilter.append(`
+                        <label><input type="checkbox" name="assigned_to" value="${user.id}"> ${escapeHtml(user.name)}</label>
+                    `);
                 });
             }
         });
     }
 
+    function updateActiveFilterCount() {
+        const totalFilters = 
+            $('input[name="priority"]:checked').length +
+            $('input[name="status"]:checked').length +
+            $('input[name="assigned_to"]:checked').length +
+            ($('#sortByFilter').val() !== 'created_at:desc' ? 1 : 0);
+
+        const $count = $('#activeFiltersCount');
+        if (totalFilters > 0) {
+            $count.text(totalFilters).show();
+        } else {
+            $count.hide();
+        }
+    }
+
+    function buildFilterParams() {
+        const filters = { all: 1 };
+        
+        // Priority filter
+        const selectedPriorities = $('input[name="priority"]:checked').map((i, el) => $(el).val()).get();
+        if (selectedPriorities.length > 0) {
+            filters.priorities = selectedPriorities;
+        }
+
+        // Status filter
+        const selectedStatuses = $('input[name="status"]:checked').map((i, el) => parseInt($(el).val())).get();
+        if (selectedStatuses.length > 0) {
+            filters.statuses = selectedStatuses;
+        }
+
+        // Assigned to filter
+        const selectedAssigned = $('input[name="assigned_to"]:checked').map((i, el) => parseInt($(el).val())).get();
+        if (selectedAssigned.length > 0) {
+            filters.assigned_to = selectedAssigned;
+        }
+
+        // Sort filter
+        const sortValue = $('#sortByFilter').val();
+        if (sortValue === 'priority') {
+            filters.sortBy = 'priority';
+            filters.sortOrder = ['high', 'medium', 'low', 'normal'];
+        } else {
+            filters.orderBy = sortValue;
+        }
+
+        return filters;
+    }
+
     function loadTasks() {
-        $.ajax({
-            url: ts_url('/api/tasks/list.php?all=1'),
-            type: 'GET',
-            dataType: 'json',
-            success: function(response) {
-                if (response.success) {
-                    const tasks = response.tasks;
-                    const $table = $('#task-table');
-                    $table.html('');
-                    
-                    if (tasks.length === 0) {
-                        $table.html('<tr><td colspan="9" style="text-align: center; color: #999;">No tasks yet</td></tr>');
-                        return;
-                    }
-                    
-                    tasks.forEach(function(task) {
-                        ts_template('task-table-detailed', task, function(html) {
-                            $table.append(html);
-                        });
-                    });
-                    
-                    attachTaskDetailHandlers();
-                } else {
-                    ts_alert(response.message || 'Error loading tasks', 'danger');
-                }
-            },
-            error: function() {
-                ts_alert('Error loading tasks', 'danger');
+        const filters = buildFilterParams();
+
+        TaskManager.listAll(filters, function(err, tasks) {
+            if (err) {
+                ts_alert(err, 'danger');
+                return;
+            }
+            
+            const $table = $('#task-table');
+            $table.html('');
+            
+            if (!tasks || tasks.length === 0) {
+                $table.append($('<tr><td colspan="9" style="text-align: center; color: #999;"></td></tr>').find('td').text(ts_translate('No tasks found')).end());
+                return;
+            }
+            
+            tasks.forEach(function(task) {
+                ts_template('task-table-detailed', task, function(html) {
+                    $table.append(html);
+                });
+            });
+            
+            if (typeof attachTaskDetailHandlers === 'function') {
+                attachTaskDetailHandlers();
             }
         });
     }
@@ -813,7 +1482,7 @@ jQuery(function($) {
                     $table.html('');
                     
                     if (projects.length === 0) {
-                        $table.html('<tr><td colspan="2" style="text-align: center; color: #999;">No projects yet</td></tr>');
+                        $table.append($('<tr><td colspan="2" style="text-align: center; color: #999;"></td></tr>').find('td').text(ts_translate('No projects yet')).end());
                         return;
                     }
                     
@@ -826,18 +1495,65 @@ jQuery(function($) {
                         $table.append($row);
                     });
                 } else {
-                    ts_alert(response.message || 'Error loading projects', 'danger');
+                    ts_alert(response.message || ts_translate('Error loading projects'), 'danger');
                 }
             },
             error: function() {
-                ts_alert('Error loading projects', 'danger');
+                ts_alert(ts_translate('Error loading projects'), 'danger');
             }
         });
     }
-    
+
+    // Initialize page
     if ($('#task-table').length > 0) {
         loadTasksData().done(function() {
+            const statusId = new URLSearchParams(window.location.search).get('status');
+            if (statusId && /^\d+$/.test(statusId)) {
+                $('#statusFilter input').filter(function() {
+                    return this.value === statusId;
+                }).prop('checked', true);
+                updateActiveFilterCount();
+                $('#filtersContainer').show();
+            }
             loadTasks();
+
+            // Set up filter event listeners AFTER page is loaded
+            $('#priorityFilter').on('change', 'input[type="checkbox"]', function() {
+                updateActiveFilterCount();
+                loadTasks();
+            });
+
+            $('#statusFilter').on('change', 'input[type="checkbox"]', function() {
+                updateActiveFilterCount();
+                loadTasks();
+            });
+
+            $('#assignedToFilter').on('change', 'input[type="checkbox"]', function() {
+                updateActiveFilterCount();
+                loadTasks();
+            });
+
+            $('#sortByFilter').on('change', function() {
+                updateActiveFilterCount();
+                loadTasks();
+            });
+
+            // Toggle filters visibility
+            $('#toggleFilters').on('click', function() {
+                $('#filtersContainer').slideToggle(300);
+            });
+
+            $('#closeFilters').on('click', function() {
+                $('#filtersContainer').slideUp(300);
+            });
+
+            // Reset filters
+            $('#resetFilters').on('click', function() {
+                $('input[type="checkbox"]').prop('checked', false);
+                $('#sortByFilter').val('created_at:desc');
+                updateActiveFilterCount();
+                loadTasks();
+            });
         });
     }
     
@@ -845,7 +1561,9 @@ jQuery(function($) {
         loadProjectsCounter();
     }
     
-    window.loadAllTasks = loadTasks;
+    window.loadAllTasks = function() {
+        loadTasks();
+    };
     window.loadProjectsCounter = loadProjectsCounter;
 });
 
@@ -868,7 +1586,6 @@ function capitalizeFirst(str) {
 
 
 
-
 function renderTaskKanbanView(tasks, statuses) {
     const $kanban = $('#tasksList');
     $kanban.html('');
@@ -888,7 +1605,7 @@ function renderTaskKanbanView(tasks, statuses) {
                 <span class="kanban-status-count">${count}</span>
             </div>
             <div class="kanban-column-body" data-status="${statusId}"></div>
-            <button class="kanban-add-task-btn" data-status="${statusId}">+ Add task</button>
+            <button class="kanban-add-task-btn" data-status="${statusId}">+ ${ts_translate('Add task')}</button>
         </div>`);
 
         const $body = $column.find('.kanban-column-body');
@@ -917,10 +1634,10 @@ function attachKanbanAddTaskHandlers() {
         
         const $form = $(`
             <div class="kanban-add-task-form">
-                <input type="text" placeholder="Task title..." class="kanban-task-input" data-status="${statusId}">
+                <input type="text" placeholder="${ts_translate('Task title...')}" class="kanban-task-input" data-status="${statusId}">
                 <div class="kanban-form-actions">
-                    <button class="kanban-form-submit">Add</button>
-                    <button class="kanban-form-cancel">Cancel</button>
+                    <button class="kanban-form-submit">${ts_translate('Add')}</button>
+                    <button class="kanban-form-cancel">${ts_translate('Cancel')}</button>
                 </div>
             </div>
         `);
@@ -962,7 +1679,7 @@ function initKanbanDragDrop() {
             ghostClass: 'sortable-ghost',
             onEnd: function(evt) {
                 const taskRow = evt.item;
-                const taskId = taskRow.querySelector('.delete-task').dataset.id;
+                const taskId = taskRow.dataset.taskId;
                 const newStatusId = evt.to.dataset.status;
                 
                 TaskManager.update(taskId, { status_id: newStatusId }, function(err) {
@@ -981,13 +1698,13 @@ function attachTaskHandlers() {
         e.preventDefault();
         e.stopPropagation();
         const id = $(this).data('id');
-        ts_confirm('Delete this task?', 'Delete', 'Cancel').then(function(confirmed) {
+        ts_confirm(ts_translate('Delete this task?'), ts_translate('Delete'), ts_translate('Cancel')).then(function(confirmed) {
             if (confirmed) {
                 TaskManager.delete(id, function(err) {
                     if (err) {
                         ts_alert(err, 'danger');
                     } else {
-                        ts_alert('Task deleted', 'success');
+                        ts_alert(ts_translate('Task deleted'), 'success');
                         loadTasks();
                     }
                 });
@@ -1006,11 +1723,6 @@ function renderTaskListView(tasks, statuses) {
     function renderStatus(statusId) {
         const status = statuses[statusId];
         const statusTasks = tasks.filter(t => t.status_id == statusId);
-        
-        if (statusTasks.length === 0) {
-            renderNextStatus();
-            return;
-        }
 
         const $section = $(`<div class="task-list-section">
             <div class="task-list-section-header" style="background-color: color-mix(in srgb, ${status.color} 12%, white)">
@@ -1020,7 +1732,7 @@ function renderTaskListView(tasks, statuses) {
                 <span class="section-count">${statusTasks.length}</span>
             </div>
             <div class="task-list-section-body" data-status="${statusId}"></div>
-            <button class="list-add-task-btn" data-status="${statusId}">+ Add task</button>
+            <button class="list-add-task-btn" data-status="${statusId}">+ ${ts_translate('Add task')}</button>
         </div>`);
 
         const $body = $section.find('.task-list-section-body');
@@ -1049,10 +1761,10 @@ function renderTaskListView(tasks, statuses) {
             
             const $form = $(`
                 <div class="list-add-task-form">
-                    <input type="text" placeholder="New task..." class="list-task-input" data-status="${statusIdValue}">
+                    <input type="text" placeholder="${ts_translate('New task...')}" class="list-task-input" data-status="${statusIdValue}">
                     <div class="list-form-actions">
-                        <button class="list-form-submit">Add</button>
-                        <button class="list-form-cancel">Cancel</button>
+                        <button class="list-form-submit">${ts_translate('Add')}</button>
+                        <button class="list-form-cancel">${ts_translate('Cancel')}</button>
                     </div>
                 </div>
             `);
@@ -1084,6 +1796,9 @@ function renderTaskListView(tasks, statuses) {
         });
 
         $list.append($section);
+        if (tasksPending === 0) {
+            renderNextStatus();
+        }
     }
 
     function renderNextStatus() {
@@ -1110,7 +1825,7 @@ function initDragDrop() {
             ghostClass: 'sortable-ghost',
             onEnd: function(evt) {
                 const taskRow = evt.item;
-                const taskId = taskRow.querySelector('.delete-task').dataset.id;
+                const taskId = taskRow.dataset.taskId;
                 const newStatusId = evt.to.dataset.status;
                 
                 TaskManager.update(taskId, { status_id: newStatusId }, function(err) {
@@ -1129,13 +1844,13 @@ function attachTaskHandlers() {
         e.preventDefault();
         e.stopPropagation();
         const id = $(this).data('id');
-        ts_confirm('Delete this task?', 'Delete', 'Cancel').then(function(confirmed) {
+        ts_confirm(ts_translate('Delete this task?'), ts_translate('Delete'), ts_translate('Cancel')).then(function(confirmed) {
             if (confirmed) {
                 TaskManager.delete(id, function(err) {
                     if (err) {
                         ts_alert(err, 'danger');
                     } else {
-                        ts_alert('Task deleted', 'success');
+                        ts_alert(ts_translate('Task deleted'), 'success');
                         loadTasks();
                     }
                 });
@@ -1145,108 +1860,92 @@ function attachTaskHandlers() {
 }
 
 
-function openTaskDetail(taskId) {
-  $.get(ts_url(`/api/tasks/get.php?id=${taskId}`), function (response) {
-    if (response.success) {
-      const task = response.task;
-      task.statuses = window.statuses || {};
-      task.priorities = window.priorities || {};
-      task.users = window.users || {};
-
-      // Render the template
-      ts_template("task-detail", task, function (html) {
-        // Create a temporary popup wrapper
-        let $popup = $(".form-popup-wrapper.task-detail-popup");
-        if ($popup.length === 0) {
-          $popup = $(
-            `<div class="form-popup-wrapper task-detail-popup" style="display:none;"></div>`,
-          );
-          $("body").append($popup);
-        }
-
-        $popup.html(html);
-        $popup.fadeToggle();
-
-        // Setup close button
-        $popup
-          .find(".task-detail-close")
-          .off("click")
-          .on("click", function () {
-            $popup.fadeToggle();
-          });
-
-        // Setup delete button
-        $popup
-          .find(".task-delete-btn")
-          .off("click")
-          .on("click", function (e) {
-            e.preventDefault();
-            ts_confirm("Delete this task?", "Delete", "Cancel").then(
-              function (confirmed) {
-                if (confirmed) {
-                  TaskManager.delete(taskId, function (err) {
-                    if (err) {
-                      ts_alert(err, "danger");
-                    } else {
-                      ts_alert("Task deleted", "success");
-                      $popup.fadeToggle();
-                      window.currentView && loadTasks(window.currentView);
-                    }
-                  });
-                }
-              },
-            );
-          });
-
-        // Setup save button
-        $popup
-          .find(".btn-primary")
-          .off("click")
-          .on("click", function (e) {
-            e.preventDefault();
-            const formData = new FormData();
-            formData.append('id', taskId);
-            formData.append('title', $popup.find('h2').text() || task.title);
-            formData.append('description', $popup.find('textarea[name="description"]').val());
-            formData.append('status_id', $popup.find('#status').val());
-            formData.append('priority', $popup.find('#priority').val());
-            formData.append('start_date', $popup.find('#start_date').val());
-            formData.append('due_date', $popup.find('#deadline').val());
-            formData.append('estimated_minutes', $popup.find('#estimated_minutes').val());
-            formData.append('assigned_to', $popup.find('#assigned_to').val());
-
-            $.ajax({
-              url: ts_url('/api/tasks/update.php'),
-              type: 'POST',
-              data: formData,
-              processData: false,
-              contentType: false,
-              success: function (response) {
-                if (response.success) {
-                  ts_alert('Task saved', 'success');
-                  $popup.fadeToggle();
-                  if (window.currentView && window.loadTasks) {
-                    window.loadTasks(window.currentView);
-                  }
-                } else {
-                  ts_alert(response.message || 'Failed to save', 'danger');
-                }
-              },
-              error: function () {
-                ts_alert('Error saving task', 'danger');
-              }
-            });
-          });
-
-        // Close when clicking outside
-        $popup.off("click.detail-close").on("click.detail-close", function (e) {
-          if ($(e.target).is(".form-popup-wrapper.task-detail-popup")) {
-            $popup.fadeToggle();
-          }
+// Initialize task popup handler
+PopupHandler.registerHandler('task', {
+    templateName: 'task-detail',
+    deleteConfirmMessage: ts_translate('Delete this task?'),
+    deletedMessage: ts_translate('Task deleted'),
+    savedMessage: ts_translate('Task saved'),
+    fetchData: function(taskId, callback) {
+        $.when(
+            $.getJSON(ts_url(`/api/tasks/get.php?id=${encodeURIComponent(taskId)}`)),
+            $.getJSON(ts_url('/api/tasks/statuses.php')),
+            $.getJSON(ts_url('/api/tasks/priorities.php')),
+            $.getJSON(ts_url('/api/users/list.php'))
+        ).done(function(taskRes, statusRes, priorityRes, userRes) {
+            const [taskResponse, statusResponse, priorityResponse, userResponse] =
+                [taskRes[0], statusRes[0], priorityRes[0], userRes[0]];
+            if (!taskResponse.success || !taskResponse.task ||
+                !statusResponse.success || !Array.isArray(statusResponse.statuses) ||
+                !priorityResponse.success || !Array.isArray(priorityResponse.priorities) ||
+                !userResponse.success || !Array.isArray(userResponse.users)) {
+                callback(ts_translate('Failed to load task'));
+                return;
+            }
+            const task = taskResponse.task;
+            task.statuses = Object.fromEntries(statusResponse.statuses.map(status => [status.id, status]));
+            task.priorities = Object.fromEntries(priorityResponse.priorities.map(priority => [priority.slug, priority.color]));
+            task.users = Object.fromEntries(userResponse.users.map(user => [user.id, user.name]));
+            callback(null, task);
+        }).fail(function() {
+            callback(ts_translate('Failed to load task'));
         });
-      });
+    },
+    onDelete: function(taskId, callback) {
+        TaskManager.delete(taskId, callback);
+    },
+    onDeleteSuccess: function() {
+        if (window.currentView && window.loadTasks) {
+            window.loadTasks(window.currentView);
+        }
+        // Reload dashboard if on dashboard page
+        if (window.reloadDashboardData) {
+            window.reloadDashboardData();
+        }
+    },
+    onSave: function(formData, callback) {
+        $.ajax({
+            url: ts_url('/api/tasks/update.php'),
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    callback(null);
+                    if (window.currentView && window.loadTasks) {
+                        window.loadTasks(window.currentView);
+                    }
+                    // Reload dashboard if on dashboard page
+                    if (window.reloadDashboardData) {
+                        window.reloadDashboardData();
+                    }
+                } else {
+                    callback(response.message || ts_translate('Failed to save'));
+                }
+            },
+            error: function() {
+                callback(ts_translate('Error saving task'));
+            }
+        });
+    },
+    collectFormData: function($popup, taskId) {
+        const formData = new FormData();
+        formData.append('id', taskId);
+        formData.append('title', $popup.find('h2').text() || '');
+        formData.append('description', $popup.find('textarea[name="description"]').val());
+        formData.append('status_id', $popup.find('#status').val());
+        formData.append('priority', $popup.find('#priority').val());
+        formData.append('start_date', $popup.find('#start_date').val());
+        formData.append('due_date', $popup.find('#deadline').val());
+        formData.append('estimated_minutes', $popup.find('#estimated_minutes').val());
+        formData.append('assigned_to', $popup.find('#assigned_to').val());
+        return formData;
     }
-  });
+});
+
+function openTaskDetail(taskId) {
+    PopupHandler.open('task', taskId);
 }
 
 function attachTaskDetailHandlers() {
@@ -1283,15 +1982,15 @@ function renderTaskTableView(tasks, statuses) {
         <table class="tasks-table">
             <thead>
                 <tr>
-                    <th class="col-title">Titel</th>
-                    <th class="col-status">Status</th>
-                    <th class="col-deadline">Deadline</th>
-                    <th class="col-priority">Prioriteit</th>
+                    <th class="col-title">${ts_translate('Title')}</th>
+                    <th class="col-status">${ts_translate('Status')}</th>
+                    <th class="col-deadline">${ts_translate('Deadline')}</th>
+                    <th class="col-priority">${ts_translate('Priority')}</th>
                 </tr>
             </thead>
             <tbody></tbody>
         </table>
-        <button class="table-add-task-btn">+ Add task</button>
+        <button class="table-add-task-btn">+ ${ts_translate('Add task')}</button>
     </div>`);
 
     const $tbody = $container.find('tbody');
@@ -1309,10 +2008,10 @@ function renderTaskTableView(tasks, statuses) {
         
         const $form = $(`
             <div class="table-add-task-form">
-                <input type="text" placeholder="New task..." class="table-task-input">
+                <input type="text" placeholder="${ts_translate('New task...')}" class="table-task-input">
                 <div class="table-form-actions">
-                    <button class="table-form-submit">Add</button>
-                    <button class="table-form-cancel">Cancel</button>
+                    <button class="table-form-submit">${ts_translate('Add')}</button>
+                    <button class="table-form-cancel">${ts_translate('Cancel')}</button>
                 </div>
             </div>
         `);
@@ -1363,13 +2062,13 @@ function attachTaskHandlers() {
         e.preventDefault();
         e.stopPropagation();
         const id = $(this).data('id');
-        ts_confirm('Delete this task?', 'Delete', 'Cancel').then(function(confirmed) {
+        ts_confirm(ts_translate('Delete this task?'), ts_translate('Delete'), ts_translate('Cancel')).then(function(confirmed) {
             if (confirmed) {
                 TaskManager.delete(id, function(err) {
                     if (err) {
                         ts_alert(err, 'danger');
                     } else {
-                        ts_alert('Task deleted', 'success');
+                        ts_alert(ts_translate('Task deleted'), 'success');
                         loadTasks();
                     }
                 });

@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode([
         'success' => false,
-        'message' => 'Method not allowed.'
+        'message' => __('Method not allowed.')
     ]);
     exit;
 }
@@ -22,7 +22,7 @@ if (
     http_response_code(403);
     echo json_encode([
         'success' => false,
-        'message' => 'Invalid CSRF token.'
+        'message' => __('Invalid CSRF token.')
     ]);
     exit;
 }
@@ -44,6 +44,6 @@ http_response_code(401);
 
 echo json_encode([
     'success' => false,
-    'message' => 'Invalid email address or password.'
+    'message' => __('Invalid email address or password.')
 ]);
 exit;

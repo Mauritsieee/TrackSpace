@@ -11,13 +11,13 @@ $priority = $task['priority'] ?? 'normal';
     <td class="col-title"><?= htmlspecialchars($task['title'] ?? '') ?></td>
     <td class="col-status">
         <span class="status-badge" style="--badge-color: <?= htmlspecialchars($statusColor) ?>">
-            <?= htmlspecialchars($status) ?>
+            <?= htmlspecialchars(__($status)) ?>
         </span>
     </td>
     <td class="col-deadline"><?= htmlspecialchars($dueDate) ?></td>
     <td class="col-priority">
         <span class="priority-badge" style="--badge-color: <?= htmlspecialchars($priorityColor) ?>">
-            <?= htmlspecialchars(ucfirst($priority)) ?>
+            <?= htmlspecialchars(__(ucfirst($priority))) ?>
         </span>
     </td>
 </tr>

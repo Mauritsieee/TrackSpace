@@ -44,6 +44,9 @@ function ts_icon( string $name ) : string {
         case 'cross':
             return '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x preview-icon"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
 
+        case 'list-filter':
+            return '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-filter preview-icon"><path d="M2 5h20"/><path d="M6 12h12"/><path d="M9 19h6"/></svg>';
+
         default:
             return '';
     }

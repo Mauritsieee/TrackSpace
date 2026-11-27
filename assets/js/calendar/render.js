@@ -16,11 +16,11 @@ jQuery(function($) {
                         $calendar.html(response.html);
                         attachButtonHandlers();
                     } else {
-                        $calendar.html('<p>Error loading calendar</p>');
+                        $calendar.empty().append($('<p></p>').text(ts_translate('Error loading calendar')));
                     }
                 },
                 error: function() {
-                    $calendar.html('<p>Error loading calendar</p>');
+                    $calendar.empty().append($('<p></p>').text(ts_translate('Error loading calendar')));
                 }
             });
         }

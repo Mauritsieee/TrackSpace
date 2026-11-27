@@ -6,7 +6,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     http_response_code(405);
-    echo json_encode(['success' => false, 'message' => 'Method not allowed.']);
+    echo json_encode(['success' => false, 'message' => __('Method not allowed.')]);
     exit;
 }
 
@@ -15,7 +15,7 @@ $taskId = (int) ($_GET['id'] ?? 0);
 
 if (!$taskId) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Task ID is required.']);
+    echo json_encode(['success' => false, 'message' => __('Task ID is required.')]);
     exit;
 }
 
@@ -35,7 +35,7 @@ $task = db_select("
 
 if (empty($task)) {
     http_response_code(404);
-    echo json_encode(['success' => false, 'message' => 'Task not found.']);
+    echo json_encode(['success' => false, 'message' => __('Task not found.')]);
     exit;
 }
 

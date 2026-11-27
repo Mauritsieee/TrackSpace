@@ -1,7 +1,5 @@
 <?php
 $task = $data ?? [];
-$status = $task['status_name'] ?? '-';
-$statusColor = $task['status_color'] ?? '#7042d9';
 $priorityColor = $task['priority_color'] ?? '#7042d9';
 $projectColor = $task['project_color'] ?? '#7042d9';
 $taskId = $task['id'] ?? 0;
@@ -19,7 +17,7 @@ $priority = $task['priority'] ?? 'normal';
     </td>
     <td class="col-priority">
         <span class="priority-badge" style="--badge-color: <?= htmlspecialchars($priorityColor) ?>">
-            <?= htmlspecialchars(ucfirst($priority)) ?>
+            <?= htmlspecialchars(__(ucfirst($priority))) ?>
         </span>
     </td>
     <td class="col-estimated"><?= htmlspecialchars($task['estimated_minutes'] ?? '-') ?></td>

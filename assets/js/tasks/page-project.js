@@ -69,8 +69,8 @@ jQuery(function($) {
                 return;
             }
 
-            if (tasks.length === 0) {
-                $('#tasksList').html('<p style="color: #999; padding: 1rem;">No tasks yet</p>');
+            if (tasks.length === 0 && view !== 'list') {
+                $('#tasksList').empty().append($('<p style="color: #999; padding: 1rem;"></p>').text(ts_translate('No tasks yet')));
                 return;
             }
 
@@ -85,7 +85,7 @@ jQuery(function($) {
     }
 
     $('.tasks-view-toggle button').on('click', function() {
-        const view = $(this).text().toLowerCase();
+        const view = $(this).data('view');
         
         // Update the 'current' class
         $('.tasks-view-toggle button').removeClass('current');
@@ -108,7 +108,7 @@ jQuery(function($) {
             if (err) {
                 ts_alert(err, 'danger');
             } else {
-                ts_alert('Task created', 'success');
+                ts_alert(ts_translate('Task created'), 'success');
                 $form[0].reset();
                 loadTasks(currentView);
             }
@@ -152,7 +152,7 @@ function createTaskQuick(title, statusId, callback) {
                     ts_template('task-kanban-card', newTask, function(html) {
                         $column.append(html);
                         attachTaskHandlers();
-                        ts_alert('Task created', 'success');
+                        ts_alert(ts_translate('Task created'), 'success');
                         if (callback) callback();
                     });
                 } else if (window.currentView === 'tabel') {
@@ -162,10 +162,10 @@ function createTaskQuick(title, statusId, callback) {
                         $tbody.append(html);
                         attachTaskHandlers();
                         attachTaskDetailHandlers();
-                        ts_alert('Task created', 'success');
+                        ts_alert(ts_translate('Task created'), 'success');
                         if (callback) callback();
                     });
-                    ts_alert('Task created', 'success');
+                    ts_alert(ts_translate('Task created'), 'success');
                     if (callback) callback();
                 } else {
                     // List view - voeg kaart toe aan de sectie
@@ -180,16 +180,16 @@ function createTaskQuick(title, statusId, callback) {
                         $count.text(parseInt($count.text()) + 1);
                         
                         attachTaskHandlers();
-                        ts_alert('Task created', 'success');
+                        ts_alert(ts_translate('Task created'), 'success');
                         if (callback) callback();
                     });
                 }
             } else {
-                ts_alert(response.message || 'Failed to create task', 'danger');
+                ts_alert(response.message || ts_translate('Failed to create task'), 'danger');
             }
         },
         error: function(xhr) {
-            ts_alert('Error creating task', 'danger');
+            ts_alert(ts_translate('Error creating task'), 'danger');
         }
     });
 }

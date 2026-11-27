@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode([
         'success' => false,
-        'message' => 'Method not allowed.'
+        'message' => __('Method not allowed.')
     ]);
     exit;
 }
@@ -22,7 +22,7 @@ if (
     http_response_code(403);
     echo json_encode([
         'success' => false,
-        'message' => 'Invalid CSRF token.'
+        'message' => __('Invalid CSRF token.')
     ]);
     exit;
 }
@@ -36,7 +36,7 @@ if ($password !== $confirmPassword) {
     http_response_code(422);
     echo json_encode([
         'success' => false,
-        'message' => 'Passwords do not match.'
+        'message' => __('Passwords do not match.')
     ]);
     exit;
 }
@@ -56,13 +56,13 @@ try {
     http_response_code(422);
     echo json_encode([
         'success' => false,
-        'message' => $e->getMessage()
+        'message' => __($e->getMessage())
     ]);
 } catch (PDOException $e) {
     http_response_code(409);
     echo json_encode([
         'success' => false,
-        'message' => 'Unable to register. This email address may already be in use.'
+        'message' => __('Unable to register. This email address may already be in use.')
     ]);
 }
 exit;

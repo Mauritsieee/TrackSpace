@@ -11,7 +11,7 @@ $i = $data ?? [];
             <?php text($i['description']); ?>
         </div>
         <div class="tags-wrapper">
-            <?php tag($i['priority'], $i['color']); ?>
+            <?php tag(__(ucfirst($i['priority'])), $i['color']); ?>
         </div>
         <div class="project-card-footer">
         
